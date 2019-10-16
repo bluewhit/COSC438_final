@@ -7,4 +7,6 @@ Hi, I'm Zachary Taylor and editing master is kinda cringe broski
 
 I'm changing this readme. 
 
-Im changing my branch
+Im changing my branch. 
+
+Whitney is now on this readme. 
