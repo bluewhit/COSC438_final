@@ -1,6 +1,6 @@
 # COSC438_final
 
-Hi, I'm Zachary Taylor
+Hi, I'm Zachary Taylor and editing master is kinda cringe broski
 
 ## Homework this Weekend: 
 - Play Pico 8 games and compile ideas! 
