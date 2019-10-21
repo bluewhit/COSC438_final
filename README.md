@@ -12,3 +12,5 @@ Im changing my branch.
 Whitney is now on this readme. 
 
 Ali is on this readme
+
+Hannah is finally also here
