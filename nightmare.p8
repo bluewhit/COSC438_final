@@ -108,7 +108,7 @@ function _draw()
    
    
    --test function to draw boss
-   --draw_boss()
+   draw_boss()
   
    rectfill(0,0,128,7,0)
    spr(21, 128-24, 0)
@@ -625,7 +625,8 @@ newboss = function (name,hp)
 	hp = hp,
 	spawned = false,
 	sprts = {},
-	flp = false
+	flp = false,
+	moves = {}
 	
 	} 
 	
@@ -648,6 +649,10 @@ function make_mboss()
 	bat = newboss("death bat",5) 
 	bat.sprts = {140,142,172,173}
 	bat.sp = 140 
+	
+	nmre = newboss("the nightmare",7)
+	nmre.sprts = {132} 
+	nmre.sp = 132 
 	
 	mbosses = {clock, grim, fish, bat} 
 end 
