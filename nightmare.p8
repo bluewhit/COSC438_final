@@ -109,7 +109,9 @@ function _draw()
    
    --test function to draw boss
    draw_boss()
-  
+   draw_health()
+   
+ 		
    rectfill(0,0,128,7,0)
    spr(21, 128-24, 0)
    print(plr.coins, 128-16, 1, 10)
@@ -584,7 +586,7 @@ end
 -- enenmies
 
 --slime counter 
-sd = 8 
+sd = 10
 function an_enemy(i)
 	
 	sd = sd-1
@@ -595,7 +597,7 @@ function an_enemy(i)
 		i.s = i.s+1
 			
 		if i.s > 65 then i.s = 64 end
-		sd = 8  
+		sd = 10 
 	end 
 end 
 	
@@ -626,7 +628,9 @@ newboss = function (name,hp)
 	spawned = false,
 	sprts = {},
 	flp = false,
-	moves = {}
+	moves = {},
+	x = 60,
+	y = 64
 	
 	} 
 	
@@ -650,7 +654,7 @@ function make_mboss()
 	bat.sprts = {140,142,172,173}
 	bat.sp = 140 
 	
-	nmre = newboss("the nightmare",7)
+	nmre = newboss("mr.nightmare",7)
 	nmre.sprts = {132} 
 	nmre.sp = 132 
 	
@@ -670,13 +674,44 @@ function spawn_mboss()
 		 cboss = mbosses[flr(rnd(4)+1)]
 			cboss.spawn = true 
 	end 
-
-	return cboss  
+  
 end
 
+--nightmare spawn
+function spawnmr()
+	cboss = nmre
+	
+	return cboss
+end  
+
+--draw the bosses 
 function draw_boss()
-	spr(cboss.sp,60,64,2,2,flp)
+
+	if cboss.name != "mr.nightmare" then
+		spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
+	else 
+		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
+	end
+	 
 end 
+
+
+-- function to draw health 
+-- and name, needs work tbh 
+function draw_health()
+	--figure out how to center 
+	-- or just do a rect fill 
+	print(cboss.name,40,16)
+	local i = 0
+	spr(5,40+i*8 ,8 , 1,1,t)
+	while i < cboss.hp do
+		spr(4,40+(i*8), 8)
+		i+=1
+	end 
+	spr(5,40+(i*8),8 )
+end
+  
+ 
 
  
 __gfx__
