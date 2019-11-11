@@ -18,13 +18,13 @@
 	horizontally or vertically back and forth. 
 	damage on touch 
 
-## Shadow Creature: sprites 72, 73 
+## shadow creature: sprites 72, 73 
 	moves after the player slowly 
 	wanders around the room randomly until the player moves within radius
 	will stop chasing player if they escape radius
 	damage on touch
 
-## Eyeball: sprites 74, 75 
+## eyeball: sprites 74, 75 
 	floats up and down, maybe i'll add a shadow underneath it
 	i *think* i'll add another sprite for when the player is above the eyeball
 	does not have a "large" chase radius, will give up following quickly
@@ -32,25 +32,25 @@
 	"shoot" at the player
 	damage on touch and if the bullets make contact 
 
-## Blood Monster: sprites 76, 77, 78, 79 
+## blood monster: sprites 76, 77, 78, 79 
 	sits still on sprite 77
 	when player enters chase radius it will do damage on contact
 	fast intial burst after player in a straight line, but slows down 
 	and tries attack again. kinda like "dashing"
 
-## Spikes: sprites 80, 81 
+## spikes: sprites 80, 81 
 	pop out of ground on a loop
 	damage on contact
 	stationary. 
 
-## Flame: sprites 86, 87 
+## flame: sprites 86, 87 
 	shoots sprite 85, it's a "small" fireball.
 	damage on contact 
 	hops around the map occasionally, but does not chase the player.
 
 # Mini-Bosses 
 	
-## Grim Reaper: sprites 95 
+## grim reaper: sprites 95 
 	does not chase the player
 	will attempt to run away if the player gets close
 	floaty boy
@@ -58,16 +58,16 @@
 	sythe does damage on contact
 	dunnno if touching him should damage or not 
 
-## Tik Tok Clok: sprites 88 
+## tik tok clok: sprites 88 
 	attacking tbd
 
-## Rotting Fish: sprites 160, 162 
+## rotting fish: sprites 160, 162 
 	flops around, so slow moving.
 	randomly flops towards player
 	uses a "bubble" for a ranged attack. 
 	maybe make it "rain" lol
 
-## Flaming Bat: sprites 140, 142, 172
+## flaming bat: sprites 140, 142, 172
 	shoots regular flames
 	shoots blue flames that do xtra damage
 	flies around kinda randomly after attacking
@@ -77,7 +77,7 @@
 	touching it is ok when it has no flames 
 	* note i need to add another sprite for it 
 
-# Mr. Nightmare: sprites 128, 130, 132
+# mr. nightmare: sprites 128, 130, 132
 	hands pop up, max like 3 hands. the hands will wiggle
 	then plop down to sprite 130, if the player is in the radius
 	they will take damage. think of it kinda like a mini earthquake.
