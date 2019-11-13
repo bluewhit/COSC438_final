@@ -47,31 +47,25 @@ function _update()
  elseif state == 1 then
    plr_update()
    enemy_update()
-   boss_update()
    
    --boss animations 
    --will have to change this 
    --to make it animate when the 
    --fish moves
    if level == 5 then 
+    state = 2
    	if cboss.name == "rotting fish" then
 					ani_fish()
 				end
 			end
 			
 			if difficulty == 4 and cboss.hp == 0 then
-				state = 3
+				--state = 3
 			end
-			 
+
  elseif state == 2 then
-   if btnp(4) then
-   		for i in all(tiles) do
-						mset(i.x, i.y, 45)
-					end
-     _init()
-     reboot()
-   end
- elseif state == 3 then
+   boss_update()
+ elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
 					mset(i.x, i.y, 45)
@@ -101,9 +95,6 @@ function _draw()
    
    map(0, 0, 0, 0, 16, 16)
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-   
-   
-    
     
    for i in all(tiles) do
   	  mset(i.x, i.y, i.s)
@@ -116,14 +107,34 @@ function _draw()
   		   spr(j.s, j.x, j.y)
   	  end
    end
-   
-   
-   --test function to draw boss
-   if level == 5 or difficulty > 3 then
-   	draw_boss()
-   end
-   
+    
+   draw_ui()
   
+ elseif state==2 then
+   cls()
+   map(0, 0, 0, 0, 16, 16)
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
+   draw_boss()
+   draw_ui()
+
+ elseif state==3 then
+   cls()
+   camera(0,0)
+   map(70,70,0,0,16,16)
+   print("you won.\npress z to play again",40,60,7)
+
+ elseif state==4 then
+   cls()
+   camera(0,0)
+   map(70,70,0,0,16,16)
+   print("game over.\npress z to restart",40,60,7)
+ end
+end
+
+-->8
+--collisions
+
+function draw_ui()
    rectfill(0,0,128,7,0)
    spr(21, 128-24, 0)
    print(plr.coins, 128-16, 1, 10)
@@ -141,22 +152,7 @@ function _draw()
    for i = 1,plr.health do
      spr(20, -8 + (i*8), 0)
    end
-  
- elseif state==2 then
-   cls()
-   camera(0,0)
-   map(70,70,0,0,16,16)
-   print("game over.\npress z to restart",40,60,7)
- elseif state==3 then
-   cls()
-   camera(0,0)
-   map(70,70,0,0,16,16)
-   print("you won.\npress z to play again",40,60,7)
- end 
 end
-
--->8
---collisions
 
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
@@ -409,7 +405,7 @@ end
 function plr_update()
 	
 	if(plr.health <= 0) then
-		state = 2
+		state = 4
 	end
 	plr.moving = false
 	plr.lastmove = plr.move
@@ -739,7 +735,9 @@ newboss = function (name,hp)
 	flp = false,
 	moves = {},
 	x = 60,
-	y = 64
+	y = 64,
+	w = 16,
+	h = 16
 	
 	} 
 	
