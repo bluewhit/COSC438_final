@@ -1,5 +1,5 @@
 # COSC438_final
-by Zack Taylor, Hannah Roe, Ali Yar Khan, Whitney Trovinger
+by Zach Taylor, Hannah Roe, Ali Yar Khan, Whitney Trovinger
 
 ## Milestone Goals:
 ### November 1st: Procedurally generated map, collisions, and sprites completed. Some combat and movement started.
@@ -21,5 +21,3 @@ by Zack Taylor, Hannah Roe, Ali Yar Khan, Whitney Trovinger
 - One-time use item flashes and gets rid of enemies 
 - Spooky music
 - Enemies: rat,ghosty thing, hopping skeleton head. 
-
-

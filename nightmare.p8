@@ -6,7 +6,7 @@ __lua__
 function _init()
 	t = true 
 	f = false 
-	
+
 	palt(3, true)
 	palt(0, false)
 	state = 0
@@ -27,17 +27,15 @@ function _init()
 		coins = 100,
 		keys = 2,
 	}
-	
+
+	level = 1
 	difficulty = 0
 	enemy = {}
 	tiles = {}
-	
+	mbosses = {}
+	cboss = {}
  genlevel()
  genenemies()
- 
- make_mboss()
- spawnmr()
- 
 end
 
 -->8
@@ -53,23 +51,32 @@ function _update()
    plr_update()
    enemy_update()
    
-   
+
    --boss animations 
    --will have to change this 
    --to make it animate when the 
-   --fish moves 
-   if cboss.name == "rotting fish" then
-				ani_fish()
+   --fish moves
+   if level == 5 then 
+    state = 2
+   	if cboss.name == "rotting fish" then
+					ani_fish()
+				end
 			end
-			 
+			
+			if difficulty == 4 and cboss.hp == 0 then
+				--state = 3
+			end
+
  elseif state == 2 then
-   if btnp(4) then
-   		for i in all(tiles) do
-						mset(i.x, i.y, 45)
-					end
-     _init()
-     reboot()
-   end
+   boss_update()
+ elseif state == 4 then
+ 	if btnp(4) then
+   	for i in all(tiles) do
+					mset(i.x, i.y, 45)
+				end
+    _init()
+    reboot()
+  end
  end
 end
 
@@ -92,9 +99,6 @@ function _draw()
    
    map(0, 0, 0, 0, 16, 16)
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-   
-   
-    
     
    for i in all(tiles) do
   	  mset(i.x, i.y, i.s)
@@ -107,17 +111,34 @@ function _draw()
   		   spr(j.s, j.x, j.y)
   	  end
    end
-   
-   
-   --test function to draw boss
+    
+   draw_ui()
+  
+ elseif state==2 then
+   cls()
+   map(0, 0, 0, 0, 16, 16)
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
    draw_boss()
-   
-   if cboss == "mr. nightmare" then 
-   	draweye()
-   end 
-   draw_health()
-   
- 		
+   draw_ui()
+
+ elseif state==3 then
+   cls()
+   camera(0,0)
+   map(70,70,0,0,16,16)
+   print("you won.\npress z to play again",40,60,7)
+
+ elseif state==4 then
+   cls()
+   camera(0,0)
+   map(70,70,0,0,16,16)
+   print("game over.\npress z to restart",40,60,7)
+ end
+end
+
+-->8
+--collisions
+
+function draw_ui()
    rectfill(0,0,128,7,0)
    spr(21, 128-24, 0)
    print(plr.coins, 128-16, 1, 10)
@@ -135,18 +156,8 @@ function _draw()
    for i = 1,plr.health do
      spr(20, -8 + (i*8), 0)
    end
-  
- elseif state==2 then
-   cls()
-   camera(0,0)
-   map(70,70,0,0,16,16)
-   print("game over.\npress z to restart",40,60,7)
- end 
+
 end
-
--->8
---collisions
-
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
 
@@ -229,7 +240,8 @@ function ranintochest(obj, aim)
 		end	
 end
 
-function enemy_attack(obj,aim)
+function melee_attack(obj,aim)
+
 	local x=obj.x local y=obj.y
 	local w=obj.w local h=obj.h
 
@@ -295,6 +307,37 @@ function enemy_in_range()
 			end
 		end
 end
+
+function	attack_boss()
+			local x1=0 local y1=0
+			local x2=0 local y2=0
+			
+			if plr.lastmove=="left" then
+				x1=plr.x-1 y1=plr.y
+				x2=plr.x-plr.w y2=plr.y+plr.h-1
+		
+			elseif plr.lastmove=="right" then 
+				x1=plr.x+1 y1=plr.y
+				x2=plr.x+plr.w y2=plr.y+plr.h-1
+	
+			elseif plr.lastmove=="up" then
+				x1=plr.x  y1=plr.y-plr.h
+				x2=plr.x+plr.w-1 y2=plr.y-1
+	
+			elseif plr.lastmove=="down" then 
+				x1=plr.x  y1=plr.y+1
+	 		x2=plr.x+plr.w-1 y2=plr.y+plr.h
+			end
+	
+			if (cboss.x/8 == x1/8 and cboss.y/8 == y1/8)
+			or (cboss.x/8 == x2/8 and cboss.y/8 == y1/8)
+			or (cboss.x/8 == x1/8 and cboss.y/8 == y2/8)
+			or (cboss.x/8 == x2/8 and cboss.y/8 == y2/8) then
+	 		if btn(5) then
+	 			cboss.health -= 1
+	 		end
+			end
+end
 -->8
 --map functions--
 
@@ -330,8 +373,26 @@ function updatemap()
 	
 	cls()
 	
-	genlevel()
-	genenemies()
+	level = level + 1
+	if level == 5 then
+		genlevel()
+		make_mboss()
+		spawn_mboss()
+	elseif level == 6 then
+		level = 1
+		difficulty = difficulty + 1
+		if difficulty == 4 then
+			genlevel()
+			make_mboss()
+			spawn_nmreboss()
+		else
+			genlevel()
+			genenemies()
+		end
+	else
+		genlevel()
+		genenemies()
+	end
 	
 	map(0, 0, 0, 0, 16, 16)
   
@@ -347,15 +408,18 @@ end
 --player functions--
 
 function plr_update()
-	
 	if(plr.health <= 0) then
-		state = 2
+		state = 4
 	end
 	plr.moving = false
 	plr.lastmove = plr.move
 	
 	ranintochest(plr, plr.lastmove)
 	enemy_in_range()
+
+	if level == 5 then
+		attack_boss()
+	end
 	
 	if btn(0) then
 		plr.x-= 1
@@ -466,27 +530,35 @@ function genenemies()
           if spawnchance == 0 then
         	   temp.name = "rat"
         	   temp.s = 64
+        	   temp.attack = {"bite"}
           elseif spawnchance == 1 then
         	   temp.name = "snake"
         	   temp.s = 66
+        	   temp.attack = {"bite"}
           elseif spawnchance == 2 then
         	   temp.name = "skull"
         	   temp.s = 68
+        	   temp.attack = {"slam", "bite"}
           elseif spawnchance == 3 then
         	   temp.name = "ghost"
         	   temp.s = 69
+        	   temp.attack = {"scare"}
           elseif spawnchance == 4 then
         	   temp.name = "ghost2"
         	   temp.s = 72
+        	   temp.attack = {"scare", "bite"}
           elseif spawnchance == 5 then
         	   temp.name = "eye"
         	   temp.s = 74
+        	   temp.attack = {"slam", "shoot"}
           elseif spawnchance == 6 then
         	   temp.name = "mouth"
         	   temp.s = 76
+        	   temp.attack = {"bite"}
           elseif spawnchance == 7 then
         	   temp.name = "fire"
         	   temp.s = 86
+        	   temp.attack = {"shoot"}
           end
         temp.fl = false
         add(enemy,temp)
@@ -502,8 +574,8 @@ function enemy_update()
  
 	for i in all(enemy) do
 	an_enemy(i)
-		if enemy_attack(i, i.move) then
-			print("you're a weak child")
+		if enemy_attack(i) then
+				print("weak")
 		else 
 			x_diff = i.x - plr.x
 			y_diff = i.y - plr.y 
@@ -559,7 +631,39 @@ function enemy_move(enem,direction)
 				end
 	end
 end
-	
+
+function enemy_attack(enem)
+		attacked = false
+		for i in all(enem.attack) do
+			if i == "bite" then
+				if melee_attack(enem, enem.move) then
+					attacked = true
+				end
+			elseif i == "slam" then
+				if melee_attack(enem, enem.move) then
+					attacked = true
+				end
+			elseif i == "shoot" then
+				if can_shoot() then
+					attacked = true
+				end
+			elseif i == "scare" then
+				if can_scare() then
+					attacked = true
+				end
+			end
+		end
+		return attacked
+	end
+
+function can_shoot()
+	return false
+	end
+
+function can_scare()
+ return false
+ end
+
 -->8
 -- animations --
 
@@ -592,7 +696,7 @@ end
 -- enenmies
 
 --slime counter 
-sd = 10
+sd = 8 
 function an_enemy(i)
 	
 	sd = sd-1
@@ -604,6 +708,7 @@ function an_enemy(i)
 			
 		if i.s > 65 then i.s = 64 end
 		sd = 10 
+		sd = 8  
 	end 
 end 
 	
@@ -636,8 +741,9 @@ newboss = function (name,hp)
 	flp = false,
 	moves = {},
 	x = 60,
-	y = 64
-	
+	y = 64,
+	w = 16,
+	h = 16
 	} 
 	
 end 
@@ -680,16 +786,7 @@ function spawn_mboss()
 		 cboss = mbosses[flr(rnd(4)+1)]
 			cboss.spawn = true 
 	end 
-  
 end
-
---nightmare spawn
-function spawnmr()
-	cboss = nmre
-	
-	return cboss
-end  
-
 --draw the bosses 
 function draw_boss()
 
@@ -699,10 +796,7 @@ function draw_boss()
 		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
 		draweye()
 	end
-	 
 end 
-
-
 -- function to draw health 
 -- and name, needs work tbh 
 function draw_health()
@@ -747,7 +841,89 @@ end
 function flash()
 	
 end 
- 
+
+function boss_update()
+	--an_enemy(cboss)
+		if boss_attack() then
+				print("weak")
+		else 
+			x_diff = cboss.x - plr.x
+			y_diff = cboss.y - plr.y 
+			if abs(x_diff) > abs(y_diff) then
+				if x_diff < 8 then
+					boss_move("right")
+				elseif x_diff > -8 then
+					boss_move("left")
+				end
+			else
+				if y_diff < 8 then
+					boss_move("down")
+				elseif y_diff > -8 then
+					boss_move("up")
+				end
+			end
+	end
+end
+
+function boss_move(direction)
+	if direction == "right" then
+		cboss.x += 1
+		cboss.move = "right"
+		cboss.moving=true
+		if collide_map(cboss,"right",0) then
+			cboss.x -= 1
+		 boss_move("up")
+			end
+	elseif direction == "left" then
+			cboss.x -= 1
+			cboss.move = "left"
+			cboss.moving=true
+			if collide_map(cboss,"left",0) then
+				cboss.x += 1
+				boss_move("down")
+				end
+	elseif direction == "up" then
+			cboss.y -= 1
+			cboss.move = "up"
+			cboss.moving=true
+			if collide_map(cboss,"up",0) then
+				cboss.y += 1
+				boss_move("right")
+				end
+	elseif direction == "down" then
+			cboss.y += 1
+			cboss.move = "down"
+			cboss.moving=true
+			if collide_map(cboss,"down",0) then
+				cboss.y -= 1
+				boss_move("left")
+				end
+	end
+end
+
+function boss_attack()
+		attacked = false
+		for i in all(cboss.attack) do
+			if i == "bite" then
+				if melee_attack(enem, enem.move) then
+					attacked = true
+				end
+			elseif i == "slam" then
+				if melee_attack(enem, enem.move) then
+					attacked = true
+				end
+			elseif i == "shoot" then
+				if can_shoot() then
+					attacked = true
+				end
+			elseif i == "scare" then
+				if can_scare() then
+					attacked = true
+				end
+			end
+		end
+		return attacked
+	end 
 __gfx__
 0000000000000000377777777777777733333333333333330000000000000000000000000000000050000005dd001550dddddddd011156dddd111550dddddddd
 0000000000011000700000000000000000000000000000030000000000000000000000000000000000000000dd111d5055515551056155dddd551d50dddddddd
