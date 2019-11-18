@@ -406,7 +406,6 @@ function updatemap()
 	else
 		genlevel()
 		genenemies()
-		spawnshop()
 		
 	end
 	
