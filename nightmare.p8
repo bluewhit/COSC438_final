@@ -27,6 +27,13 @@ function _init()
 		coins = 100,
 		keys = 2,
 	}
+	reticle = {
+		sp=38,
+		x=16,
+		y=24,
+		w=8,
+		h=8
+	}
 
 	level = 1
 	difficulty = 0
@@ -69,6 +76,8 @@ function _update()
 
  elseif state == 2 then
    boss_update()
+   plr_update()
+
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
@@ -99,7 +108,8 @@ function _draw()
    
    map(0, 0, 0, 0, 16, 16)
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-    
+   spr(reticle.sp, reticle.x, reticle.y) 
+
    for i in all(tiles) do
   	  mset(i.x, i.y, i.s)
    end
@@ -116,9 +126,12 @@ function _draw()
   
  elseif state==2 then
    cls()
-   map(0, 0, 0, 0, 16, 16)
+   map(17, 0, 0, 0, 16, 16)
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-   draw_boss()
+   spr(reticle.sp, reticle.x, reticle.y)
+   if cboss.hp > 0 then
+   	draw_boss()
+   end
    draw_ui()
 
  elseif state==3 then
@@ -188,9 +201,9 @@ function ranintochest(obj, aim)
 	local x=obj.x local y=obj.y
 	local w=obj.w local h=obj.h
 
-	local x1=0 local y1=0
-	local x2=0 local y2=0
-	
+
+	local x1=reticle.x local y1=reticle.y
+	local x2=reticle.x+reticle.w local y2=reticle.y+reticle.h
 	if aim=="left" then
 		x1=x-1 y1=y
 		x2=x-w y2=y+h-1
@@ -217,25 +230,22 @@ function ranintochest(obj, aim)
 	if fget(mget(x1,y1),1) then
 		if btn(5) then
 	 	mset(x1, y1, 18)
-		plr.coins += 1
+			plr.coins += 1
 	 	end
 	elseif fget(mget(x1,y2),1) then
 		if btn(5) then
 	 	mset(x1, y2, 18)
 		 plr.coins += 1
-
 	 	end
 	elseif fget(mget(x2,y1),1) then
 		if btn(5) then
 	 	mset(x2, y1, 18)
 		 plr.coins += 1
-
 	 	end
 	elseif fget(mget(x2,y2),1) then
 	 if btn(5) then
 	 	mset(x2, y2, 18)
 		 plr.coins += 1
-
 	 	end
 		end	
 end
@@ -279,28 +289,23 @@ function enemy_in_range()
 		for i in all(enemy) do
 			local x1=0 local y1=0
 			local x2=0 local y2=0
+			local enx1=0 local eny1=0
+			local enx2=0 local eny2=0
 			
-			if plr.lastmove=="left" then
-				x1=plr.x-1 y1=plr.y
-				x2=plr.x-plr.w y2=plr.y+plr.h-1
-		
-			elseif plr.lastmove=="right" then 
-				x1=plr.x+1 y1=plr.y
-				x2=plr.x+plr.w y2=plr.y+plr.h-1
-	
-			elseif plr.lastmove=="up" then
-				x1=plr.x  y1=plr.y-plr.h
-				x2=plr.x+plr.w-1 y2=plr.y-1
-	
-			elseif plr.lastmove=="down" then 
-				x1=plr.x  y1=plr.y+1
-	 		x2=plr.x+plr.w-1 y2=plr.y+plr.h
-			end
-	
-			if (i.x/8 == x1/8 and i.y/8 == y1/8)
-			or (i.x/8 == x2/8 and i.y/8 == y1/8)
-			or (i.x/8 == x1/8 and i.y/8 == y2/8)
-			or (i.x/8 == x2/8 and i.y/8 == y2/8) then
+			x1=reticle.x
+			x2=reticle.x+reticle.w
+			y1=reticle.y
+			y2=reticle.y+reticle.h
+			
+			enx1=i.x
+			enx2=i.x+i.w
+			eny1=i.y
+			eny2=i.y+i.h
+			
+			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 	 		if btn(5) then
 	 			i.health -= 1
 	 		end
@@ -311,30 +316,26 @@ end
 function	attack_boss()
 			local x1=0 local y1=0
 			local x2=0 local y2=0
+			local enx1=0 local eny1=0
+			local enx2=0 local eny2=0
 			
-			if plr.lastmove=="left" then
-				x1=plr.x-1 y1=plr.y
-				x2=plr.x-plr.w y2=plr.y+plr.h-1
-		
-			elseif plr.lastmove=="right" then 
-				x1=plr.x+1 y1=plr.y
-				x2=plr.x+plr.w y2=plr.y+plr.h-1
-	
-			elseif plr.lastmove=="up" then
-				x1=plr.x  y1=plr.y-plr.h
-				x2=plr.x+plr.w-1 y2=plr.y-1
-	
-			elseif plr.lastmove=="down" then 
-				x1=plr.x  y1=plr.y+1
-	 		x2=plr.x+plr.w-1 y2=plr.y+plr.h
-			end
-	
-			if (cboss.x/8 == x1/8 and cboss.y/8 == y1/8)
-			or (cboss.x/8 == x2/8 and cboss.y/8 == y1/8)
-			or (cboss.x/8 == x1/8 and cboss.y/8 == y2/8)
-			or (cboss.x/8 == x2/8 and cboss.y/8 == y2/8) then
+			x1=reticle.x
+			x2=reticle.x+reticle.w
+			y1=reticle.y
+			y2=reticle.y+reticle.h
+			
+			enx1=cboss.x
+			enx2=cboss.x+cboss.w
+			eny1=cboss.y
+			eny2=cboss.y+cboss.h
+			
+			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 	 		if btn(5) then
-	 			cboss.health -= 1
+	 			cboss.hp -= 1
+
 	 		end
 			end
 end
@@ -375,14 +376,12 @@ function updatemap()
 	
 	level = level + 1
 	if level == 5 then
-		genlevel()
 		make_mboss()
 		spawn_mboss()
 	elseif level == 6 then
 		level = 1
 		difficulty = difficulty + 1
 		if difficulty == 4 then
-			genlevel()
 			make_mboss()
 			spawn_nmreboss()
 		else
@@ -425,6 +424,7 @@ function plr_update()
 		plr.x-= 1
 		plr.move = "left"
 		plr.moving=true
+		reticle_aim("left")
 		
 		--animate 
 		plr.flp = true
@@ -435,14 +435,14 @@ function plr_update()
 		end
 		if plr.x < 0 then
 			updatemap()
-			plr.x = 128
+			plr.x = 120
 		end
 		--enemy_update()
 	elseif btn(1) then
 		plr.x += 1
 		plr.move = "right"
 		plr.moving=true
-		
+		reticle_aim("right")
 		--animate
 		plr.flp = false
 		plr_walk()
@@ -452,7 +452,7 @@ function plr_update()
 		end
 		if plr.x > 128 then
 			updatemap()
-			plr.x = 0
+			plr.x = 8
 		end
 		--enemy_update()
 	end
@@ -461,7 +461,7 @@ function plr_update()
 		plr.y -= 1
 		plr.move = "up"
 		plr.moving=true
-		
+		reticle_aim("up")
 		if plr.sp == 96 or plr.sp ==97 then plr.sp = 99 end 
 		plr_up()
 		
@@ -470,14 +470,15 @@ function plr_update()
 		end
 		if plr.y < 8 then
 			updatemap()
-			plr.y = 128
+			plr.y = 120
 		end
 		--enemy_update()
 	elseif btn(3) then
 		plr.y += 1
 		plr.move = "down"
 		plr.moving=true
-		
+		reticle_aim("down")
+
 		--animate 
 		plr.flp = false
 		plr_walk()
@@ -487,15 +488,28 @@ function plr_update()
 			end
 		if plr.y > 128 then
 			updatemap()
-			plr.y = 8   
+			plr.y = 16   
+
 			end
 		--enemy_update()
 	end
-	
-	
 end
 
-
+function reticle_aim(aim)
+	if aim == "left" then
+		reticle.x = plr.x-8
+		reticle.y = plr.y
+	elseif aim == "right" then
+		reticle.x = plr.x+7
+		reticle.y = plr.y
+	elseif aim == "up" then
+		reticle.x = plr.x
+		reticle.y = plr.y-7
+	elseif aim == "down" then
+		reticle.x = plr.x
+		reticle.y = plr.y+8
+	end
+end
 
 -->8
 --enemy functions--
@@ -526,9 +540,10 @@ function genenemies()
           temp.anim = 0
           temp.move = "down"
           temp.health = 1
-          spawnchance = flr(rnd(8))
+          temp.detected = false
+          spawnchance = flr(rnd(8)-1)
           if spawnchance == 0 then
-        	   temp.name = "rat"
+        	   temp.name = "slime"
         	   temp.s = 64
         	   temp.attack = {"bite"}
           elseif spawnchance == 1 then
@@ -537,14 +552,19 @@ function genenemies()
         	   temp.attack = {"bite"}
           elseif spawnchance == 2 then
         	   temp.name = "skull"
-        	   temp.s = 68
+        	   temp.s = 90
         	   temp.attack = {"slam", "bite"}
           elseif spawnchance == 3 then
         	   temp.name = "ghost"
         	   temp.s = 69
+        	   movechance = flr(rnd(4))
+        	   if movechance == 1 or movechance == 3 then
+        	   	temp.move = "right"
+        	   end
+        	   temp.count = 15
         	   temp.attack = {"scare"}
           elseif spawnchance == 4 then
-        	   temp.name = "ghost2"
+        	   temp.name = "shadow"
         	   temp.s = 72
         	   temp.attack = {"scare", "bite"}
           elseif spawnchance == 5 then
@@ -552,12 +572,16 @@ function genenemies()
         	   temp.s = 74
         	   temp.attack = {"slam", "shoot"}
           elseif spawnchance == 6 then
-        	   temp.name = "mouth"
-        	   temp.s = 76
+        	   temp.name = "blood"
+        	   temp.s = 77
         	   temp.attack = {"bite"}
           elseif spawnchance == 7 then
         	   temp.name = "fire"
         	   temp.s = 86
+        	   temp.attack = {"shoot"}
+        	 elseif spawnchance == 8 then
+        	   temp.name = "spike"
+        	   temp.s = 80
         	   temp.attack = {"shoot"}
           end
         temp.fl = false
@@ -570,28 +594,155 @@ function genenemies()
 end
 
 function enemy_update()
-
- 
 	for i in all(enemy) do
-	an_enemy(i)
-		if enemy_attack(i) then
+		an_enemy(i)
+		detect(i)
+		if i.detected then
+			if enemy_attack(i) then
 				print("weak")
-		else 
-			x_diff = i.x - plr.x
-			y_diff = i.y - plr.y 
-			if abs(x_diff) > abs(y_diff) then
-				if x_diff < 8 then
-					enemy_move(i,"right")
-				elseif x_diff > -8 then
-					enemy_move(i,"left")
-				end
 			else
-				if y_diff < 8 then
-					enemy_move(i,"down")
-				elseif y_diff > -8 then
-					enemy_move(i,"up")
+				if i.name == "slime" or
+							i.name == "snake" or
+							i.name == "shadow" or
+							i.name == "eye" or
+							i.name == "skull" then			 
+					x_diff = i.x - plr.x
+					y_diff = i.y - plr.y 
+					if abs(x_diff) > abs(y_diff) then
+						if x_diff < 8 then
+							enemy_move(i,"right")
+						elseif x_diff > -8 then
+							enemy_move(i,"left")
+						end
+					else
+						if y_diff < 8 then
+							enemy_move(i,"down")
+						elseif y_diff > -8 then
+							enemy_move(i,"up")
+						end
+					end
+				elseif i.name == "ghost" then
+					if i.count < 30 then
+						enemy_move(i, i.move)
+					elseif i.move == "right" then
+						i.move = "left"
+						i.count = 0
+					elseif i.move == "left" then
+						i.move = "right"
+						i.count = 0
+					elseif i.move == "up" then
+						i.move = "down"
+						i.count = 0
+					elseif i.move == "down" then
+						i.move = "up"
+						i.count = 0
+					end
+				elseif i.name == "fire" then
+					d = flr(rnd(4)+1)
+					if d == 1 then
+						i.x += 32
+						if collide_map(i, "right", 0) then
+							i.x -= 32
+						elseif i.x > 104 then
+							i.x = 104
+						end
+					elseif d == 2 then
+						i.x -= 32
+						if collide_map(i, "left", 0) then
+							i.x += 32
+						elseif i.x < 8 then
+							i.x = 8
+						end
+					elseif d == 3 then
+						i.y += 32
+						if collide_map(i, "down", 0) then
+							i.y -= 32
+						elseif i.y > 112 then
+							i.y = 112
+						end
+					elseif d == 4 then
+						i.y -= 32
+						if collide_map(i, "up", 0) then
+							i.y += 32
+						elseif i.y < 16 then
+							i.x = 16
+						end
+					end
 				end
 			end
+		else
+			if i.name == "slime" or
+						i.name == "snake" or
+						i.name == "shadow" then
+					d = flr(rnd(4)+1)
+					if d == 1 then
+						i.x += 1
+						if collide_map(i, "right", 0) then
+							i.x -= 1
+						end
+					elseif d == 2 then
+						i.x -= 1
+						if collide_map(i, "left", 0) then
+							i.x += 1
+						end
+					elseif d == 3 then
+						i.y += 1
+						if collide_map(i, "down", 0) then
+							i.y -= 1
+						end
+					elseif d == 4 then
+						i.x -= 1
+						if collide_map(i, "up", 0) then
+							i.x += 1
+						end
+					end
+				elseif i.name == "eye" then
+					d = flr(rnd(2)+1)
+					if d == 1 then
+						i.y += 1
+						if collide_map(i, "down", 0) then
+							i.y -= 1
+						end
+					elseif d == 2 then
+						i.y -= 1
+						if collide_map(i, "up", 0) then
+							i.y += 1
+						end
+					end
+				elseif i.name == "spike" then
+					enemy_attack(i)
+				elseif i.name == "fire" then
+					d = flr(rnd(4)+1)
+					if d == 1 then
+						i.x += 32
+						if collide_map(i, "right", 0) then
+							i.x -= 32
+						elseif i.x > 104 then
+							i.x = 104
+						end
+					elseif d == 2 then
+						i.x -= 32
+						if collide_map(i, "left", 0) then
+							i.x += 32
+						elseif i.x < 8 then
+							i.x = 8
+						end
+					elseif d == 3 then
+						i.y += 32
+						if collide_map(i, "down", 0) then
+							i.y -= 32
+						elseif i.y > 112 then
+							i.y = 112
+						end
+					elseif d == 4 then
+						i.y -= 32
+						if collide_map(i, "up", 0) then
+							i.y += 32
+						elseif i.y < 16 then
+							i.x = 16
+						end
+					end
+				end
 		end
 	end
 end
@@ -632,6 +783,47 @@ function enemy_move(enem,direction)
 	end
 end
 
+function detect(enem)
+	if enem.name == "slime" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	elseif enem.name == "snake" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	elseif enem.name == "skull" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	elseif enem.name == "ghost" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	elseif enem.name == "shadow" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		else
+			enem.detected = false
+		end
+	elseif enem.name == "eye" then
+		if plr.x - enem.x < 32 and plr.y - enem.y < 32 then
+			enem.detected = true
+		else
+			enem.detected = false
+		end
+	elseif enem.name == "blood" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	elseif enem.name == "spike" then
+		enem.detected = true
+	elseif enem.name == "fire" then
+		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
+			enem.detected = true
+		end
+	end
+end
 function enemy_attack(enem)
 		attacked = false
 		for i in all(enem.attack) do
@@ -700,7 +892,7 @@ sd = 8
 function an_enemy(i)
 	
 	sd = sd-1
-	if i.name == "rat" and sd < 0 then 
+	if i.name == "slime" and sd < 0 then 
 		
 		--add in code to move enemy 
 		
@@ -739,7 +931,8 @@ newboss = function (name,hp)
 	spawned = false,
 	sprts = {},
 	flp = false,
-	moves = {},
+	attack = {"bite"},
+	move = "down",
 	x = 60,
 	y = 64,
 	w = 16,
@@ -869,7 +1062,6 @@ function boss_move(direction)
 	if direction == "right" then
 		cboss.x += 1
 		cboss.move = "right"
-		cboss.moving=true
 		if collide_map(cboss,"right",0) then
 			cboss.x -= 1
 		 boss_move("up")
@@ -877,7 +1069,6 @@ function boss_move(direction)
 	elseif direction == "left" then
 			cboss.x -= 1
 			cboss.move = "left"
-			cboss.moving=true
 			if collide_map(cboss,"left",0) then
 				cboss.x += 1
 				boss_move("down")
@@ -885,7 +1076,6 @@ function boss_move(direction)
 	elseif direction == "up" then
 			cboss.y -= 1
 			cboss.move = "up"
-			cboss.moving=true
 			if collide_map(cboss,"up",0) then
 				cboss.y += 1
 				boss_move("right")
@@ -893,7 +1083,6 @@ function boss_move(direction)
 	elseif direction == "down" then
 			cboss.y += 1
 			cboss.move = "down"
-			cboss.moving=true
 			if collide_map(cboss,"down",0) then
 				cboss.y -= 1
 				boss_move("left")
@@ -905,11 +1094,13 @@ function boss_attack()
 		attacked = false
 		for i in all(cboss.attack) do
 			if i == "bite" then
-				if melee_attack(enem, enem.move) then
+
+				if melee_attack(cboss, cboss.move) then
 					attacked = true
 				end
 			elseif i == "slam" then
-				if melee_attack(enem, enem.move) then
+				if melee_attack(cboss, cboss.move) then
+
 					attacked = true
 				end
 			elseif i == "shoot" then
@@ -941,14 +1132,14 @@ __gfx__
 0888220324422442244224423338383333388833333aaa33399a999333a33a3333333a333322333300000000505005055000000516d516d516d516d5dd651165
 30822033022222200222222033338333333383333333333399a99aa9333333333a333333333223230000000050111105501111051555155515551555dd651615
 33000333300000033000000333333333333333333333333333999993a33333333333333a333333330000000001111111011111110000000000000000dd651651
-333339333339333333393333333933333399933333330443000000000000000000000000000000001111100000000000011111111111111111111111dd551551
-33a3933333333393339a9333333a93333393933333307303000000000000000000000000000000001100000000000000000001111115111115111111ddd51615
-33393933333393333339a933339aa333339993333307d033000000000000000000000000000000001000000000000000000000111551551511111111dd651166
-339aaa933399a933339aa933339aa933333a333330dd0033000000000000000000000000000000001000000000000000000000111511115511111111dd651111
-339aa993339aa9933399a9333399a933333aa33330d01103000000000000000000000000000000001000000000000000000000111115515511111111dd615555
-34444933344449333332433333324333333a333330100103000000000000000000000000000000000000000000000000000000011515511151111111dd15d666
-42232444422324443332433333324333333aa33330111103000000000000000000000000000000000000000000000000000000015511155151111111dddddddd
-333332433333324333333333333333333333333333000033000000000000000000000000000000000000000000000000000000011511511111111111dddddddd
+333339333339333333393333333933333399933333330443aaa33aaa0000000000000000000000001111100000000000011111111111111111111111dd551551
+33a3933333333393339a9333333a93333393933333307303a333333a0000000000000000000000001100000000000000000001111115111115111111ddd51615
+33393933333393333339a933339aa333339993333307d033a333333a0000000000000000000000001000000000000000000000111551551511111111dd651166
+339aaa933399a933339aa933339aa933333a333330dd0033333333330000000000000000000000001000000000000000000000111511115511111111dd651111
+339aa993339aa9933399a9333399a933333aa33330d01103333333330000000000000000000000001000000000000000000000111115515511111111dd615555
+34444933344449333332433333324333333a333330100103a333333a0000000000000000000000000000000000000000000000011515511151111111dd15d666
+42232444422324443332433333324333333aa33330111103a333333a0000000000000000000000000000000000000000000000015511155151111111dddddddd
+333332433333324333333333333333333333333333000033aaa33aaa0000000000000000000000000000000000000000000000011511511111111111dddddddd
 33333333333333333d033dd03d033dd03333333333333333000000000000000000000000000000000000000000000000000000001111115111111111156156dd
 33900933330000333d800d033d800d033300000030111133000000000000000000000000000000000000000000000000000000001155155511111111516156dd
 30955903305555030888dd030888dd033099499401515113000000000000000000000000000000001000000000000000000000001551115511111111561156dd
