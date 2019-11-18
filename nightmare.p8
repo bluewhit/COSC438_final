@@ -77,6 +77,7 @@ function _update()
  elseif state == 2 then
    boss_update()
    plr_update()
+
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
@@ -108,6 +109,7 @@ function _draw()
    map(0, 0, 0, 0, 16, 16)
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
    spr(reticle.sp, reticle.x, reticle.y) 
+
    for i in all(tiles) do
   	  mset(i.x, i.y, i.s)
    end
@@ -199,8 +201,25 @@ function ranintochest(obj, aim)
 	local x=obj.x local y=obj.y
 	local w=obj.w local h=obj.h
 
+
 	local x1=reticle.x local y1=reticle.y
 	local x2=reticle.x+reticle.w local y2=reticle.y+reticle.h
+	if aim=="left" then
+		x1=x-1 y1=y
+		x2=x-w y2=y+h-1
+		
+	elseif aim=="right" then 
+		x1=x+1 y1=y
+		x2=x+w y2=y+h-1
+	
+	elseif aim=="up" then
+		x1=x  y1=y-h
+		x2=x+w-1 y2=y-1
+	
+	elseif aim=="down" then 
+		x1=x  y1=y+1
+	 x2=x+w-1 y2=y+h
+	end
 	
 	--pixels to tiles
 	
@@ -316,6 +335,7 @@ function	attack_boss()
 			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 	 		if btn(5) then
 	 			cboss.hp -= 1
+
 	 		end
 			end
 end
@@ -458,6 +478,7 @@ function plr_update()
 		plr.move = "down"
 		plr.moving=true
 		reticle_aim("down")
+
 		--animate 
 		plr.flp = false
 		plr_walk()
@@ -468,13 +489,11 @@ function plr_update()
 		if plr.y > 128 then
 			updatemap()
 			plr.y = 16   
+
 			end
 		--enemy_update()
 	end
-	
-	
 end
-
 
 function reticle_aim(aim)
 	if aim == "left" then
@@ -491,7 +510,6 @@ function reticle_aim(aim)
 		reticle.y = plr.y+8
 	end
 end
-
 
 -->8
 --enemy functions--
@@ -806,7 +824,6 @@ function detect(enem)
 		end
 	end
 end
-
 function enemy_attack(enem)
 		attacked = false
 		for i in all(enem.attack) do
@@ -1013,6 +1030,10 @@ function draweye()
 	spr(eye, cboss.x+6, cboss.y+8, 2,1,efl,false)  	
 	
 end  
+ 
+function flash()
+	
+end 
 
 function boss_update()
 	--an_enemy(cboss)
@@ -1073,11 +1094,13 @@ function boss_attack()
 		attacked = false
 		for i in all(cboss.attack) do
 			if i == "bite" then
+
 				if melee_attack(cboss, cboss.move) then
 					attacked = true
 				end
 			elseif i == "slam" then
 				if melee_attack(cboss, cboss.move) then
+
 					attacked = true
 				end
 			elseif i == "shoot" then
