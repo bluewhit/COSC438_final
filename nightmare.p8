@@ -55,34 +55,27 @@ function _update()
      state = 1
    end
  elseif state == 1 then
-   plr_update()
-   enemy_update()
-   
-
-   --boss animations 
-   --will have to change this 
-   --to make it animate when the 
-   --fish moves
+    plr_update()
+    enemy_update()
    if level == 5 then 
     state = 2
-   	if cboss.name == "rotting fish" then
-					ani_fish()
-				end
-			end
+   		if cboss.name == "rotting fish" then
+			ani_fish()
+		end
+	end
 			
-			if difficulty == 4 and cboss.hp == 0 then
-				--state = 3
-			end
+	if difficulty == 4 and cboss.hp == 0 then
+		--state = 3
+	end
 
  elseif state == 2 then
-   boss_update()
-   plr_update()
-
+	  plr_update()
+    boss_update()
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
-					mset(i.x, i.y, 45)
-				end
+		mset(i.x, i.y, 45)
+	end
     _init()
     reboot()
   end
@@ -93,37 +86,11 @@ end
 function _draw()
   
  if state==0 then
-   cls()
-   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
-   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
-   print("press ❎ after walking \nup to a chest to open", 24, 48)
-   print("press z to play", 32, 64, 7)
-   print("i can't wait to meet you...", 12, 112, 1)
-   for i = 1,4 do
-     spr(147+i, 40+(8*i), 100)
-   end
+	draw_intro()
  elseif state==1 then
- 	
-   cls()
-   
-   map(0, 0, 0, 0, 16, 16)
-   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-   spr(reticle.sp, reticle.x, reticle.y) 
-
-   for i in all(tiles) do
-  	  mset(i.x, i.y, i.s)
-   end
-  
-   for j in all(enemy) do
-  	  if j.health <= 0 then
-	 		   del(enemy, j)
-	 	  else
-  		   spr(j.s, j.x, j.y)
-  	  end
-   end
-    
-   draw_ui()
-  
+	  draw_main()
+	  draw_ui()
+    draw_enemy_health()
  elseif state==2 then
    cls()
    map(17, 0, 0, 0, 16, 16)
@@ -131,6 +98,7 @@ function _draw()
    spr(reticle.sp, reticle.x, reticle.y)
    if cboss.hp > 0 then
    	draw_boss()
+   	draw_boss_health()
    end
    draw_ui()
 
@@ -148,8 +116,32 @@ function _draw()
  end
 end
 
--->8
---collisions
+function draw_intro()
+   cls()
+   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
+   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
+   print("press ❎ after walking \nup to a chest to open", 24, 48)
+   print("press z to play", 32, 64, 7)
+   print("i can't wait to meet you...", 12, 112, 1)
+   for i = 1,4 do
+     spr(147+i, 40+(8*i), 100)
+   end
+end
+
+function draw_main()
+   cls()
+   map(0, 0, 0, 0, 16, 16)
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
+   spr(reticle.sp, reticle.x, reticle.y) 
+
+   for i in all(tiles) do
+  	  mset(i.x, i.y, i.s)
+   end
+  
+   for j in all(enemy) do
+  		spr(j.s, j.x, j.y)
+   end
+end
 
 function draw_ui()
    rectfill(0,0,128,7,0)
@@ -171,6 +163,9 @@ function draw_ui()
    end
 
 end
+-->8
+--collisions
+
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
 
@@ -226,28 +221,33 @@ function ranintochest(obj, aim)
 	x1/=8  x2/=8
 	y1/=8  y2/=8
 	
-	
-	if fget(mget(x1,y1),1) then
-		if btn(5) then
-	 	mset(x1, y1, 18)
-			plr.coins += 1
-	 	end
-	elseif fget(mget(x1,y2),1) then
-		if btn(5) then
-	 	mset(x1, y2, 18)
-		 plr.coins += 1
-	 	end
-	elseif fget(mget(x2,y1),1) then
-		if btn(5) then
-	 	mset(x2, y1, 18)
-		 plr.coins += 1
-	 	end
-	elseif fget(mget(x2,y2),1) then
-	 if btn(5) then
-	 	mset(x2, y2, 18)
-		 plr.coins += 1
-	 	end
+	if plr.keys > 0 then
+		if fget(mget(x1,y1),1) then
+			if btnp(5) then
+				mset(x1, y1, 18)
+				plr.coins += 1
+				plr.keys -= 1
+			end
+		elseif fget(mget(x1,y2),1) then
+			if btnp(5) then
+				mset(x1, y2, 18)
+				plr.coins += 1
+				plr.keys -= 1
+			end
+		elseif fget(mget(x2,y1),1) then
+			if btnp(5) then
+				mset(x2, y1, 18)
+				plr.coins += 1
+				plr.keys -= 1
+			end
+		elseif fget(mget(x2,y2),1) then
+			if btnp(5) then
+				mset(x2, y2, 18)
+				plr.coins += 1
+				plr.keys -= 1
+			end
 		end	
+	end
 end
 
 function melee_attack(obj,aim)
@@ -272,7 +272,7 @@ function melee_attack(obj,aim)
 	
 	elseif aim=="down" then 
 		x1=x  y1=y+1
-	 x2=x+w-1 y2=y+h
+	 	x2=x+w-1 y2=y+h
 	end
 	
 	
@@ -285,32 +285,28 @@ function melee_attack(obj,aim)
 		end	
 end
 
-function enemy_in_range()
-		for i in all(enemy) do
-			local x1=0 local y1=0
-			local x2=0 local y2=0
-			local enx1=0 local eny1=0
-			local enx2=0 local eny2=0
+function enemy_in_range(i)
+	local x1=0 local y1=0
+	local x2=0 local y2=0
+	local enx1=0 local eny1=0
+	local enx2=0 local eny2=0
 			
-			x1=reticle.x
-			x2=reticle.x+reticle.w
-			y1=reticle.y
-			y2=reticle.y+reticle.h
+	x1=reticle.x
+	x2=reticle.x+reticle.w
+	y1=reticle.y
+	y2=reticle.y+reticle.h
+		
+	enx1=i.x
+	enx2=i.x+i.w
+	eny1=i.y
+	eny2=i.y+i.h
 			
-			enx1=i.x
-			enx2=i.x+i.w
-			eny1=i.y
-			eny2=i.y+i.h
-			
-			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
-			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
-			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
-			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
-	 		if btn(5) then
-	 			i.health -= 1
-	 		end
-			end
-		end
+	if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+	or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+	or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+		return true
+	end
 end
 
 function	attack_boss()
@@ -414,8 +410,7 @@ function plr_update()
 	plr.lastmove = plr.move
 	
 	ranintochest(plr, plr.lastmove)
-	enemy_in_range()
-
+	attack_enemy()
 	if level == 5 then
 		attack_boss()
 	end
@@ -437,7 +432,6 @@ function plr_update()
 			updatemap()
 			plr.x = 120
 		end
-		--enemy_update()
 	elseif btn(1) then
 		plr.x += 1
 		plr.move = "right"
@@ -454,7 +448,6 @@ function plr_update()
 			updatemap()
 			plr.x = 8
 		end
-		--enemy_update()
 	end
 	
 	if btn(2) then
@@ -472,7 +465,6 @@ function plr_update()
 			updatemap()
 			plr.y = 120
 		end
-		--enemy_update()
 	elseif btn(3) then
 		plr.y += 1
 		plr.move = "down"
@@ -491,7 +483,23 @@ function plr_update()
 			plr.y = 16   
 
 			end
-		--enemy_update()
+	end
+end
+
+function attack_enemy()
+	for i in all(enemy) do
+		if enemy_in_range(i) and btnp(5) then
+			i.health -= 1
+			if plr.move == "right" then
+				i.x += 6
+			elseif plr.move == "left" then
+				i.x -= 6
+			elseif plr.move == "up" then
+				i.y -= 6
+			elseif plr.move == "down" then
+				i.y += 6
+			end
+		end
 	end
 end
 
@@ -537,9 +545,10 @@ function genenemies()
           temp.moving = false
           temp.d = 0
           temp.acc = 0.35
+		  temp.spd = 1
           temp.anim = 0
           temp.move = "down"
-          temp.health = 1
+          temp.health = 3
           temp.detected = false
           spawnchance = flr(rnd(8)-1)
           if spawnchance == 0 then
@@ -597,6 +606,9 @@ function enemy_update()
 	for i in all(enemy) do
 		an_enemy(i)
 		detect(i)
+   		if i.health <= 0 then
+			del(enemy, i)
+   		end
 		if i.detected then
 			if enemy_attack(i) then
 				print("weak")
@@ -749,37 +761,37 @@ end
 
 function enemy_move(enem,direction)
 	if direction == "right" then
-		enem.x += 1
+		enem.x += enem.spd
 		enem.move = "right"
 		enem.moving=true
 		if collide_map(enem,"right",0) then
-			enem.x -= 1
+			enem.x -= enem.spd
 			enemy_move("up")
-			end
+		end
 	elseif direction == "left" then
-			enem.x -= 1
-			enem.move = "left"
-			enem.moving=true
-			if collide_map(enem,"left",0) then
-				enem.x += 1
-				enemy_move("down")
-				end
+		enem.x -= enem.spd
+		enem.move = "left"
+		enem.moving=true
+		if collide_map(enem,"left",0) then
+			enem.x += enem.spd
+			enemy_move("down")
+		end
 	elseif direction == "up" then
-			enem.y -= 1
-			enem.move = "up"
-			enem.moving=true
-			if collide_map(enem,"up",0) then
-				enem.y += 1
-				enemy_move("right")
-				end
+		enem.y -= enem.spd
+		enem.move = "up"
+		enem.moving=true
+		if collide_map(enem,"up",0) then
+			enem.y += enem.spd
+			enemy_move("right")
+		end
 	elseif direction == "down" then
-			enem.y += 1
-			enem.move = "down"
-			enem.moving=true
-			if collide_map(enem,"down",0) then
-				enem.y -= 1
-				enemy_move("left")
-				end
+		enem.y += enem.spd
+		enem.move = "down"
+		enem.moving=true
+		if collide_map(enem,"down",0) then
+			enem.y -= enem.spd
+			enemy_move("left")
+		end
 	end
 end
 
@@ -992,7 +1004,13 @@ function draw_boss()
 end 
 -- function to draw health 
 -- and name, needs work tbh 
-function draw_health()
+function draw_enemy_health()
+  for i in all(enemy) do
+    rectfill(i.x, i.y - 2, i.x + (2 * i.health), i.y-1, 8)
+  end
+end
+
+function draw_boss_health()
 	--figure out how to center 
 	-- or just do a rect fill 
 	print(cboss.name,40,16)
@@ -1005,7 +1023,7 @@ function draw_health()
 	spr(5,40+(i*8),8)
 	
 end
- 
+
  
 function draweye()
 	
