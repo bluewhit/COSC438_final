@@ -34,7 +34,8 @@ function _init()
 		w=8,
 		h=8
 	}
-
+	
+	
 	--shop init 
 	buy = {16,36,51,53,37}
 	shp = {}
@@ -65,27 +66,23 @@ function _update()
      state = 1
    end
  elseif state == 1 then
-    plr_update()
-    enemy_update()
-   if level == 5 then 
-    state = 2
-   		if cboss.name == "rotting fish" then
-			ani_fish()
-		end
-	end
+   plr_update()
+   enemy_update()
+  
 			
-	if difficulty == 4 and cboss.hp == 0 then
-		--state = 3
-	end
+			if difficulty == 4 and cboss.hp == 0 then
+				--state = 3
+			end
 
  elseif state == 2 then
-	  plr_update()
-    boss_update()
+   boss_update()
+   plr_update()
+
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
-		mset(i.x, i.y, 45)
-	end
+					mset(i.x, i.y, 45)
+				end
     _init()
     reboot()
   end
@@ -96,12 +93,42 @@ end
 function _draw()
   
  if state==0 then
-	  draw_intro()
+   cls()
+   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
+   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
+   print("press ❎ after walking \nup to a chest to open", 24, 48)
+   print("press z to play", 32, 64, 7)
+   print("i can't wait to meet you...", 12, 112, 1)
+   for i = 1,4 do
+     spr(147+i, 40+(8*i), 100)
+   end
  elseif state==1 then
-    draw_diag()
-	  draw_main()
-	  draw_ui()
-    draw_enemy_health()
+ 	
+   cls()
+   
+   map(0, 0, 0, 0, 16, 16)
+    
+			
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
+   spr(reticle.sp, reticle.x, reticle.y) 
+			
+			
+   for i in all(tiles) do
+  	  mset(i.x, i.y, i.s)
+   end
+  
+   for j in all(enemy) do
+  	  if j.health <= 0 then
+	 		   del(enemy, j)
+	 	  else
+  		  --spr(j.s, j.x, j.y)
+  		  an_enemy(j)
+  	  end
+   end
+    
+   draw_ui()
+   draw_diag()
+  
  elseif state==2 then
    cls()
    map(17, 0, 0, 0, 16, 16)
@@ -109,7 +136,6 @@ function _draw()
    spr(reticle.sp, reticle.x, reticle.y)
    if cboss.hp > 0 then
    	draw_boss()
-   	draw_boss_health()
    end
    draw_ui()
 
@@ -127,32 +153,8 @@ function _draw()
  end
 end
 
-function draw_intro()
-   cls()
-   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
-   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
-   print("press ❎ after walking \nup to a chest to open", 24, 48)
-   print("press z to play", 32, 64, 7)
-   print("i can't wait to meet you...", 12, 112, 1)
-   for i = 1,4 do
-     spr(147+i, 40+(8*i), 100)
-   end
-end
-
-function draw_main()
-   cls()
-   map(0, 0, 0, 0, 16, 16)
-   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
-   spr(reticle.sp, reticle.x, reticle.y) 
-
-   for i in all(tiles) do
-  	  mset(i.x, i.y, i.s)
-   end
-  
-   for j in all(enemy) do
-  		spr(j.s, j.x, j.y)
-   end
-end
+-->8
+--collisions
 
 function draw_ui()
    rectfill(0,0,128,7,0)
@@ -174,9 +176,6 @@ function draw_ui()
    end
 
 end
--->8
---collisions
-
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
 
@@ -231,34 +230,29 @@ function ranintochest(obj, aim)
 	
 	x1/=8  x2/=8
 	y1/=8  y2/=8
-  
-	if plr.keys > 0 then
-		if fget(mget(x1,y1),1) then
-			if btnp(5) then
-				mset(x1, y1, 18)
-				plr.coins += 1
-				plr.keys -= 1
-			end
-		elseif fget(mget(x1,y2),1) then
-			if btnp(5) then
-				mset(x1, y2, 18)
-				plr.coins += 1
-				plr.keys -= 1
-			end
-		elseif fget(mget(x2,y1),1) then
-			if btnp(5) then
-				mset(x2, y1, 18)
-				plr.coins += 1
-				plr.keys -= 1
-			end
-		elseif fget(mget(x2,y2),1) then
-			if btnp(5) then
-				mset(x2, y2, 18)
-				plr.coins += 1
-				plr.keys -= 1
-			end
+	
+	
+	if fget(mget(x1,y1),1) then
+		if btn(5) then
+	 	mset(x1, y1, 18)
+			plr.coins += 1
+	 	end
+	elseif fget(mget(x1,y2),1) then
+		if btn(5) then
+	 	mset(x1, y2, 18)
+		 plr.coins += 1
+	 	end
+	elseif fget(mget(x2,y1),1) then
+		if btn(5) then
+	 	mset(x2, y1, 18)
+		 plr.coins += 1
+	 	end
+	elseif fget(mget(x2,y2),1) then
+	 if btn(5) then
+	 	mset(x2, y2, 18)
+		 plr.coins += 1
+	 	end
 		end	
-	end
 end
 
 function melee_attack(obj,aim)
@@ -283,7 +277,7 @@ function melee_attack(obj,aim)
 	
 	elseif aim=="down" then 
 		x1=x  y1=y+1
-	 	x2=x+w-1 y2=y+h
+	 x2=x+w-1 y2=y+h
 	end
 	
 	
@@ -296,28 +290,32 @@ function melee_attack(obj,aim)
 		end	
 end
 
-function enemy_in_range(i)
-	local x1=0 local y1=0
-	local x2=0 local y2=0
-	local enx1=0 local eny1=0
-	local enx2=0 local eny2=0
+function enemy_in_range()
+		for i in all(enemy) do
+			local x1=0 local y1=0
+			local x2=0 local y2=0
+			local enx1=0 local eny1=0
+			local enx2=0 local eny2=0
 			
-	x1=reticle.x
-	x2=reticle.x+reticle.w
-	y1=reticle.y
-	y2=reticle.y+reticle.h
-		
-	enx1=i.x
-	enx2=i.x+i.w
-	eny1=i.y
-	eny2=i.y+i.h
+			x1=reticle.x
+			x2=reticle.x+reticle.w
+			y1=reticle.y
+			y2=reticle.y+reticle.h
 			
-	if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
-	or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
-	or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
-	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
-		return true
-	end
+			enx1=i.x
+			enx2=i.x+i.w
+			eny1=i.y
+			eny2=i.y+i.h
+			
+			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+	 		if btn(5) then
+	 			i.health -= 1
+	 		end
+			end
+		end
 end
 
 function	attack_boss()
@@ -453,7 +451,8 @@ function plr_update()
 	plr.lastmove = plr.move
 	
 	ranintochest(plr, plr.lastmove)
-	attack_enemy()
+	enemy_in_range()
+
 	if level == 5 then
 		attack_boss()
 	end
@@ -475,6 +474,7 @@ function plr_update()
 			updatemap()
 			plr.x = 120
 		end
+		--enemy_update()
 	elseif btn(1) then
 		plr.x += 1
 		plr.move = "right"
@@ -491,6 +491,7 @@ function plr_update()
 			updatemap()
 			plr.x = 8
 		end
+		--enemy_update()
 	end
 	
 	if btn(2) then
@@ -508,6 +509,7 @@ function plr_update()
 			updatemap()
 			plr.y = 120
 		end
+		--enemy_update()
 	elseif btn(3) then
 		plr.y += 1
 		plr.move = "down"
@@ -526,23 +528,7 @@ function plr_update()
 			plr.y = 16   
 
 			end
-	end
-end
-
-function attack_enemy()
-	for i in all(enemy) do
-		if enemy_in_range(i) and btnp(5) then
-			i.health -= 1
-			if plr.move == "right" then
-				i.x += 6
-			elseif plr.move == "left" then
-				i.x -= 6
-			elseif plr.move == "up" then
-				i.y -= 6
-			elseif plr.move == "down" then
-				i.y += 6
-			end
-		end
+		--enemy_update()
 	end
 end
 
@@ -588,10 +574,9 @@ function genenemies()
           temp.moving = false
           temp.d = 0
           temp.acc = 0.35
-		  temp.spd = 1
           temp.anim = 0
           temp.move = "down"
-          temp.health = 3
+          temp.health = 1
           temp.detected = false
           spawnchance = flr(rnd(8)-1)
           if spawnchance == 0 then
@@ -647,11 +632,7 @@ end
 
 function enemy_update()
 	for i in all(enemy) do
-		an_enemy(i)
 		detect(i)
-   	if i.health <= 0 then
-			del(enemy, i)
-   	end
 		if i.detected then
 			if enemy_attack(i) then
 				print("weak")
@@ -767,7 +748,7 @@ function enemy_update()
 				elseif i.name == "spike" then
 					enemy_attack(i)
 				elseif i.name == "fire" then
-					d = flr(rnd(4)+1)
+					d = flr(rnd(4))+1
 					if d == 1 then
 						i.x += 32
 						if collide_map(i, "right", 0) then
@@ -804,37 +785,37 @@ end
 
 function enemy_move(enem,direction)
 	if direction == "right" then
-		enem.x += enem.spd
+		enem.x += 1
 		enem.move = "right"
 		enem.moving=true
 		if collide_map(enem,"right",0) then
-			enem.x -= enem.spd
+			enem.x -= 1
 			enemy_move("up")
-		end
+			end
 	elseif direction == "left" then
-		enem.x -= enem.spd
-		enem.move = "left"
-		enem.moving=true
-		if collide_map(enem,"left",0) then
-			enem.x += enem.spd
-			enemy_move("down")
-		end
+			enem.x -= 1
+			enem.move = "left"
+			enem.moving=true
+			if collide_map(enem,"left",0) then
+				enem.x += 1
+				enemy_move("down")
+				end
 	elseif direction == "up" then
-		enem.y -= enem.spd
-		enem.move = "up"
-		enem.moving=true
-		if collide_map(enem,"up",0) then
-			enem.y += enem.spd
-			enemy_move("right")
-		end
+			enem.y -= 1
+			enem.move = "up"
+			enem.moving=true
+			if collide_map(enem,"up",0) then
+				enem.y += 1
+				enemy_move("right")
+				end
 	elseif direction == "down" then
-		enem.y += enem.spd
-		enem.move = "down"
-		enem.moving=true
-		if collide_map(enem,"down",0) then
-			enem.y -= enem.spd
-			enemy_move("left")
-		end
+			enem.y += 1
+			enem.move = "down"
+			enem.moving=true
+			if collide_map(enem,"down",0) then
+				enem.y -= 1
+				enemy_move("left")
+				end
 	end
 end
 
@@ -940,23 +921,104 @@ function plr_up()
 end 
 
 -- enenmies
-
---slime counter 
-sd = 8 
 function an_enemy(i)
-	
-	sd = sd-1
-	if i.name == "slime" and sd < 0 then 
-		
-		--add in code to move enemy 
-		
-		i.s = i.s+1
-			
-		if i.s > 65 then i.s = 64 end
-		sd = 10 
-		sd = 8  
+	--check which way to flip
+	eflp = f
+	if plr.x > i.x then 
+		eflp = t
 	end 
+	
+	func = f 
+	
+	if i.name == "slime" then
+		func = t 
+		sf = 64
+		nf = 2 
+		sp = 6
+		  
+	elseif i.name == "snake" then 
+		func = t 
+		sf = 66
+		nf = 2 
+		sp = 6
+		
+	elseif i.name == "shadow" then 
+		if i.moving == false then 
+			i.s = 73
+		else 
+			i.s = 72
+		end
+		
+	elseif i.name == "eye" then 
+		if i.moving == f then 
+			i.s = 74 
+		elseif i.moving == true then 
+			if plr.y < i.y then
+				i.s = 106
+			else
+			 i.s = 75
+			end 
+		end
+		
+	elseif i.name == "skull" then 
+		if plr.y > i.x then 
+			i.s = 91
+		else 
+			i.s = 68
+		end 
+	
+	elseif i.name == "ghost" then
+		if i.moving == f then 
+			i.s = 71
+		else 
+			func = t 
+			sf = 69
+			nf = 2 
+			sp = 6 
+		end
+		
+	elseif i.name == "blood" then
+		if i.moving == f then 
+			i.s = 77
+		elseif plr.y < i.y then 
+			i.s = 79
+		elseif plr.y > i.y then 
+			i.s = 76 
+		else
+			i.s = 79
+		end  
+	elseif i.name == "fire" then 
+		func = t 
+		sf = 86
+		nf = 2 
+		sp = 6
+	
+	end
+	
+	-- if we use the function
+	if func == t then 
+		anim(i,sf,nf,sp,eflp)
+	else 
+		spr(i.s,i.x,i.y,1,1,eflp)
+	end
+	  
 end 
+
+--animation
+function anim(o,sf,nf,sp,fl)
+  if(not o.a_ct) o.a_ct=0
+  if(not o.a_st) o.a_st=0
+
+  o.a_ct+=1
+
+  if(o.a_ct%(30/sp)==0) then
+    o.a_st+=1
+    if(o.a_st==nf) o.a_st=0
+  end
+
+  o.a_fr=sf+o.a_st
+  spr(o.a_fr,o.x,o.y,1,1,fl)
+end
 	
 -- dialogeeee
 function draw_box()
@@ -1070,13 +1132,7 @@ function draw_boss()
 end 
 -- function to draw health 
 -- and name, needs work tbh 
-function draw_enemy_health()
-  for i in all(enemy) do
-    rectfill(i.x, i.y - 2, i.x + (2 * i.health), i.y-1, 8)
-  end
-end
-
-function draw_boss_health()
+function draw_health()
 	--figure out how to center 
 	-- or just do a rect fill 
 	print(cboss.name,40,16)
@@ -1089,7 +1145,7 @@ function draw_boss_health()
 	spr(5,40+(i*8),8)
 	
 end
-
+ 
  
 function draweye()
 	
@@ -1462,20 +1518,22 @@ __gff__
 0000000100000001000000010101010101030100000000000000000000010101000000000505000000000000000000010000050500050000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000010000010000000000000000000000000000000000000000000000000000000000010000000000000000000000000000
 __map__
-0000000000000000000000090000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-1f1d1e1e1d1d2d3d3d2d1d1e1e1d1d0f00c1c2c2c2c2c3e3e3e3e3c1c2c2c2c2c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e2d2d2d2d2d2d3d3d2d2d2d2d2d2d0d00d1d2d3d3d3d3e3e3e3e3d3d3d3d3e6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000090000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1f1d1e1e1d1d2d3d3d2d1d1e1e1d1d0f00c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e2d2d2d2d2d2d3d3d2d2d2d2d2d2d0d00d1d2d3d3d3d3d3d3d3d3d3d3d3d3e6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0b2d2d2d3d3d3d3d3d2d2d3d3d3d2d0d00d1e2e3c5c6e3e3e3e3e3e3e3e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d3d3d3d2e3d2d3d3d3d3d2d0d00d1e2e3d5d6e3c4c4c4c4c4c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d2d2d2d2d2d2d2d0d00d1e2c4c4e3e3c4c4c4c4c4c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e2d3d3d3d3d3d3d2d2d2d2d2d2d2d0d00e1e2c4c4c4e3e3e3e3e3e3e3e3e3e5e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d3d3d3d3d2d2d2d2d2d2d2d2d00e3e3e3c4c4e3e3c5c6c7e3e3e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d3d2d2d2d2d2d2d3d3d3d2d2d00e3e3c4c4e3e3e3c6c6c6e3e3e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d2d2d2d2d2d2d2d3d3d3d2d2d00e3e3e3e3e3e3e3c6c6d7e3c4e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0e2d2d2d2d3d3d3d3d2d2d3d3d3d2d0d00c1e2e3e3e3e3e3d5d7c4c4c4e3e3e5c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e2d3d3d3d3d3d3d2d2d2d2d2d2d2d0d00d1e2c4c4c4e3e3e3e3e3e3e3e3c4e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2d3d3d3d3d3d3d3d2d2d2d2d2d2d2d2d00d1e2e3c4c4e3e3c5c6c7e3e3e3c4e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2d3d3d3d3d2d2d2d2d2d2d3d3d3d2d2d00d1e2c4c4e3e3e3c6c6c6e3e3e3c4e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2d3d3d3d2d2d2d2d2d2d2d3d3d3d2d2d00d1e2e3e3e3e3e3c6c6d7e3c4e3c4e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e2d2d2d2d3d3d3d3d2d2d3d3d3d2d0d00d1e2e3e3e3e3e3d5d7c4c4c4e3c4e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d3d2d2d2d3d3d2d0d00d1e2e3e3e3e3e3e3c4c4c4c7e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d2d2d2d2d3d3d2d0d00d1e2e3c5e3e3c4c4c4c4c4d7e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0b2d2d2d2d3d3d3d2d2d2d2d2d2d2d0d00d1e2e3d5c7c4e3c4c4e3e3c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0b2d2d2d2d3d3d2d2d2d2d2d2d2d2d0d00d1f5f4f4f4f4e3e3e3e3f4f4f4f4f6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2f0c0c0c0c0c3d3d3d3d0c0c0c0c0c3f00e1f2f2f2f2e4e3e3e3e3e1f2f2f2f2e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
+0b2d2d2d2d3d3d2d2d2d2d2d2d2d2d0d00d1f5f4f4f4f4f4f4f4f4f4f4f4f4f6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2f0c0c0c0c0c3d3d3d3d0c0c0c0c0c3f00e1f2f2f2f2f2f2f2f2f2f2f2f2f2f2e4f900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000bebebebebebe000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000bebebebebebe000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000bebebebebebe000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
