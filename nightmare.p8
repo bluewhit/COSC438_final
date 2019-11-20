@@ -57,7 +57,6 @@ function _update()
  elseif state == 1 then
     plr_update()
     enemy_update()
-
    if level == 5 then 
     state = 2
    		if cboss.name == "rotting fish" then
@@ -70,9 +69,8 @@ function _update()
 	end
 
  elseif state == 2 then
-	plr_update()
+	  plr_update()
     boss_update()
-
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
@@ -90,8 +88,8 @@ function _draw()
  if state==0 then
 	draw_intro()
  elseif state==1 then
-	draw_main()
-	draw_ui()
+	  draw_main()
+	  draw_ui()
     draw_enemy_health()
  elseif state==2 then
    cls()
@@ -167,6 +165,7 @@ function draw_ui()
 end
 -->8
 --collisions
+
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
 
@@ -308,7 +307,6 @@ function enemy_in_range(i)
 	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 		return true
 	end
-	
 end
 
 function	attack_boss()
@@ -1025,7 +1023,7 @@ function draw_boss_health()
 	spr(5,40+(i*8),8)
 	
 end
- 
+
  
 function draweye()
 	
