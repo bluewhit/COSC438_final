@@ -916,7 +916,6 @@ function plr_walk()
 		if plr.sp>97 then plr.sp=96 end 
 		d=5
 	end
- 
 end 
 
 -- animation up 
