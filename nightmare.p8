@@ -137,8 +137,10 @@ function _draw()
    if cboss.hp > 0 then
    	draw_boss()
    end
+   
    draw_ui()
-
+			draw_diag()
+			
  elseif state==3 then
    cls()
    camera(0,0)
@@ -153,8 +155,41 @@ function _draw()
  end
 end
 
+<<<<<<< Updated upstream
 -->8
 --collisions
+=======
+function draw_intro()
+   cls()
+   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
+   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
+   print("press ❎ after walking \nup to a chest to open", 24, 48)
+   print("press z to play", 32, 64, 7)
+   print("i can't wait to meet you...", 12, 112, 1)
+   for i = 1,4 do
+     spr(147+i, 40+(8*i), 100)
+   end
+end
+
+function draw_main()
+   cls()
+   map(0, 0, 0, 0, 16, 16)
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
+   spr(reticle.sp, reticle.x, reticle.y) 
+
+   for i in all(tiles) do
+  	  mset(i.x, i.y, i.s)
+   end
+  
+   for j in all(enemy) do
+  		an_enemy(j)
+   end
+   
+   for k in all(projectiles) do
+   	spr(k.sp, k.x, k.y)
+   end
+end
+>>>>>>> Stashed changes
 
 function draw_ui()
    rectfill(0,0,128,7,0)
@@ -412,32 +447,7 @@ function updatemap()
 
 end  
 
---function to pick items 
-function spawnshop()
-	
-	dis_diag = t
-	input = f
-	diag = "do you want to buy something?"
 
-	draw_diag()
-
-	item1 = buy[flr(rnd(5)) + 1]
-	item2 = buy[flr(rnd(5)) + 1] 
-	
-end
- 
-function drawshop()
-	--spr
-	spr(152,48,56,4,3)
-	--hamster
-	spr(116,56,56,2,1)
-	spr(118,60,51)
-	
-	--two items 
-	spr(item1,56,64)
-	spr(item2,64,64)
-
-end  
 
 
 -->8
@@ -517,7 +527,7 @@ function plr_update()
 		reticle_aim("down")
 
 		--animate 
-		plr.flp = false
+		plr.flp = f
 		plr_walk()
 		
 		if collide_map(plr,"down",0) then
@@ -528,7 +538,59 @@ function plr_update()
 			plr.y = 16   
 
 			end
+<<<<<<< Updated upstream
 		--enemy_update()
+=======
+	end
+end
+
+function attack_enemy()
+	for i in all(enemy) do
+		if enemy_in_range(i) and btnp(5) then
+			i.health -= 1
+			if plr.move == "right" then
+				i.x += 6
+				while i.x > 120 or collide_map(i,"right",0) do
+					i.x -= 1
+				end
+				
+				plr.sp = 98
+				plr.flp = f
+			elseif plr.move == "left" then
+				i.x -= 6
+				while i.x < 0 or collide_map(i,"left",0) do
+					i.x -= 1
+				end
+				
+				plr.sp = 98
+				plr.flp = t
+				
+			elseif plr.move == "up" then
+				i.y -= 6
+				while i.y < 0 or collide_map(i,"up",0) do
+					i.y -= 1
+				end
+				
+				plr.sp=101
+				plr.flp = f 
+				
+			elseif plr.move == "down" then
+				i.y += 6
+				while i.y > 128 or collide_map(i,"down",0) do
+					i.y -= 1
+				end
+				
+				plr.sp = 103
+				plr.flp = f 
+			end
+		end
+	end
+end
+
+function attack_boss()
+	if boss_in_range(i) and btnp(5) then
+			cboss.hp -= 1		
+>>>>>>> Stashed changes
 	end
 end
 
@@ -883,6 +945,7 @@ function enemy_attack(enem)
 		end
 		return attacked
 	end
+end 
 
 function can_shoot()
 	return false
@@ -927,20 +990,34 @@ function an_enemy(i)
 	if plr.x > i.x then 
 		eflp = t
 	end 
+<<<<<<< Updated upstream
 	
 	func = f 
 	
+=======
+	
+	func = f 
+	
+>>>>>>> Stashed changes
 	if i.name == "slime" then
 		func = t 
 		sf = 64
 		nf = 2 
+<<<<<<< Updated upstream
 		sp = 6
+=======
+		sp = 8
+>>>>>>> Stashed changes
 		  
 	elseif i.name == "snake" then 
 		func = t 
 		sf = 66
 		nf = 2 
+<<<<<<< Updated upstream
 		sp = 6
+=======
+		sp = 8
+>>>>>>> Stashed changes
 		
 	elseif i.name == "shadow" then 
 		if i.moving == false then 
@@ -954,14 +1031,22 @@ function an_enemy(i)
 			i.s = 74 
 		elseif i.moving == true then 
 			if plr.y < i.y then
+<<<<<<< Updated upstream
 				i.s = 106
+=======
+				i.s = 122
+>>>>>>> Stashed changes
 			else
 			 i.s = 75
 			end 
 		end
 		
 	elseif i.name == "skull" then 
+<<<<<<< Updated upstream
 		if plr.y > i.x then 
+=======
+		if plr.y > i.y then 
+>>>>>>> Stashed changes
 			i.s = 91
 		else 
 			i.s = 68
@@ -974,7 +1059,11 @@ function an_enemy(i)
 			func = t 
 			sf = 69
 			nf = 2 
+<<<<<<< Updated upstream
 			sp = 6 
+=======
+			sp = 8 
+>>>>>>> Stashed changes
 		end
 		
 	elseif i.name == "blood" then
@@ -1050,13 +1139,141 @@ function draw_diag()
 		draw_box() 
 		print(sub(diag,1,flr(d_tick+6/3)),8,107)
 		d_tick+=1
-		if d_tick > 90 and input == false then
+		if d_tick > 90 and input == f then
 			dis_diag = false
 			diag = ""
 			d_tick = 0
 		end
 	end 
 end 
+
+--function to pick items 
+function spawnshop()
+	
+	dis_diag = t
+	input = f
+	diag = "do you want to buy something?"
+
+	draw_diag()
+
+	item1 = buy[flr(rnd(5)) + 1]
+	item2 = buy[flr(rnd(5)) + 1] 
+	
+	if btn(5) then
+		trigger()
+	end 
+	
+end
+ 
+function drawshop()
+	--spr
+	spr(152,48,56,4,3)
+	--hamster
+	spr(116,56,56,2,1)
+	spr(118,60,51)
+	
+	--two items 
+	mset(item1,56,64)
+	mset(item2,64,64)
+
+end  
+
+function i_info()
+	
+	it = map_tile 
+	diag = "this is a"
+	
+	if it == 51 or item == 50 then 
+		diag = diag + " heart.\nit willraise your health by one."
+	elseif it == 36 then
+		diag = diag + " key.\nyou can use these to open chests."
+	elseif it == 16 then 
+		diag = diag + " potion.\nthis will restore your health."
+	end 
+	
+	dis_diag = t
+	draw_diag()
+	
+end 
+
+function trigger()	
+		if fget(map_tile,2) then 
+			shopping = t  
+		end
+end 
+
+function draw_menu(x,y)
+	
+	t1 = "buy"
+	t2 = "info"
+	
+	if select == 1 then
+		t1 = "➡️"..sub(t1,3)
+	else
+		t2 = "➡️"..sub(t2,3)
+	end
+	
+	print(t1,x,y,0)
+	print(t2,x+35,y,0)
+
+end
+
+function use_menu()	
+	if btn(0) then
+		if not (select % 2 == 1) then
+			select-=1
+		end
+	elseif btn(1) then
+		if not (select % 2 == 0) then
+			select +=1
+		end
+	elseif btnp(4) then
+		shopping = f 
+	elseif btnp(5) then
+		selection = select
+	end
+end
+
+function selection_check()
+	 
+	 if shopping then 
+	 	if select == 1 then 
+	 		plr.coins -= 1 
+	 		diag = "thanks for shopping!"
+	 	else 
+	 		i_info()
+	 	end 
+	 end 
+	 
+end  
+	 		
+	 		
+	 		--function to pick items 
+function spawnshop()
+	
+	dis_diag = t
+	input = f
+	diag = "do you want to buy something?"
+
+	draw_diag()
+
+	item1 = buy[flr(rnd(5)) + 1]
+	item2 = buy[flr(rnd(5)) + 1] 
+	
+end
+ 
+function drawshop()
+	--spr
+	spr(152,48,56,4,3)
+	--hamster
+	spr(116,56,56,2,1)
+	spr(118,60,51)
+	
+	--two items 
+	spr(item1,56,64)
+	spr(item2,64,64)
+
+end  
 -->8
 -- boss code 
 
@@ -1171,10 +1388,6 @@ function draweye()
 	
 end  
  
-function flash()
-	
-end 
-
 function boss_update()
 	--an_enemy(cboss)
 		if boss_attack() then
@@ -1304,6 +1517,7 @@ __gfx__
 333333333363333332333333399983333998333333333333338a7a99399a7a9349aaaaaaaaaaaa9036d6ddd03067676033333603333340333333333170711110
 3666333336663333333233333333338393333333333333333339a9933339a933494a0aaaaa0aa49036d600033306d60333333033333302033333333100011110
 33333333333333333333333333933333333333a333333333333333333333333349aaa0a90000aa90300033333330003333333333333330033333333101111110
+<<<<<<< Updated upstream
 333333333333333333333333333333333333333333333343333333330000000049aaaaa0aa0aaa90333333330000000033333333333330203333333111111103
 4399993333333333399993333999934333333333399993432322223300000000494aaaa0aaaaa490330003330000000033333333333333003333333111111103
 4999ff9334999933999ff9339999994339999343999999432222ee230000000049aaaaa0aaaaaa90308080330000000033333333333333003333333011111113
@@ -1320,6 +1534,24 @@ fddddd3334ffff334f4444443dddddf339999343fdddd333e888883300000000334999aa4a999033
 33999333342333333332333335033343330777777777999030000a33363336333333363333333333000000000000000000000000000000000000000000000000
 333c333333333333333233333033334330ff7777777ff90333333633336663633333333333333333000000000000000000000000000000000000000000000000
 333c3333333333333333333333333343330000000000003333333333333333333333333333333333000000000000000000000000000000000000000000000000
+=======
+333333333333333333333333333333333333333333333343333333333399993349aaaaa0aa0aaa90333333333333333333333333333330203333333111111103
+439999333333333339999333399993433333333339999343232222333999ff93494aaaa0aaaaa49033333333333c333333333333333333003333333111111103
+4999ff9334999933999ff9339999994339999343999999432222ee233f0ff0f349aaaaa0aaaaaa90333333333333333333333333333333003333333011111113
+4f0ff0f33499ff93f0ff0f339999994399999943999999f32e8ee8e334ffff33499aaa000aaaa990cc3cc3c3333c333333333333333333333333333011111113
+43ffff33340ff0f33ffff333399993439999994339999d4323eeee333fdddd3334994aa0aaa4990333333333333c333333333333333333333333333311103113
+fddddd3334ffff334f4444443dddddf339999343fdddd333e888883334ddddf3334999aa4a999033333333333333333333333333333333333333333301103333
+43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e334833833333449999990033333333333333c333333333333333333333333333333103313
+3383383334ddddf33833833338338333fdddd343383383333323323334333333333330000000333333333333333c333333333333333333333333333313033333
+3333333333333333333f333333330003330999000099903333333333336663363333333333333333333333333939a93300000000000000000000000000000000
+333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333333000333339a7a9300000000000000000000000000000000
+333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333330808033339a7a9300000000000000000000000000000000
+3336333333342333333e333333655043330f70799079f033311111336363336336336333336663330d8086033389a98300000000000000000000000000000000
+333633333342333333323333365033433307700770099090311111336333336333663333333666330d8886033338983300000000000000000000000000000000
+339993333423333333323333350333433307777777779990310000333633363333333633333333330dd8dd033333833900000000000000000000000000000000
+333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333330ddd033a333833300000000000000000000000000000000
+333c3333333333333333333333333343330000000000003333333333333333333333333333333333330003333333333300000000000000000000000000000000
+>>>>>>> Stashed changes
 33333033033333333333333333333333333333333333333333333333333333333330000000003333333300000000333333333333338333333333333333833333
 3333300300333333333333333333333333333333333333333333333333333333330dd010dddd00333300dd01110d003333333333938333333333338333333333
 333330030030333333333333333333333333333333000000000333333333333330dd01110ddddd0330dddd01110ddd0333333333998333333333333333333333
