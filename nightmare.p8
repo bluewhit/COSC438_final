@@ -45,6 +45,7 @@ function _init()
 	tiles = {}
 	mbosses = {}
 	cboss = {}
+	projectiles = {}
  genlevel()
  genenemies()
  
@@ -67,6 +68,8 @@ function _update()
  elseif state == 1 then
     plr_update()
     enemy_update()
+    proj_update()
+
    if level == 5 then 
     state = 2
    	if cboss.name == "rotting fish" then
@@ -78,13 +81,35 @@ function _update()
 	end
    end
  elseif state == 2 then
-	  plr_update()
-    boss_update()
+	plr_update()
+	if cboss.hp > 0 then
+ 	boss_update()
+ else
+ 	if difficulty == 4 then
+			state = 3
+		end
+ 	mset(23,1,227)
+ 	mset(24,1,227)
+ 	mset(25,1,227)
+ 	mset(26,1,227)
+ 	mset(17,7,227)
+ 	mset(17,8,227)
+ 	mset(17,9,227)
+ 	mset(32,7,227)
+ 	mset(32,8,227)
+ 	mset(32,9,227)
+ 	mset(23,15,227)
+ 	mset(24,15,227)
+ 	mset(25,15,227)
+ 	mset(26,15,227)
+ end
+ proj_update()
+
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
-		mset(i.x, i.y, 45)
-	end
+					mset(i.x, i.y, 45)
+				end
     _init()
     reboot()
   end
@@ -151,6 +176,10 @@ function draw_main()
    for j in all(enemy) do
   		spr(j.s, j.x, j.y)
    end
+   
+   for k in all(projectiles) do
+   	spr(k.sp, k.x, k.y)
+   end
 end
 
 function draw_ui()
@@ -175,7 +204,6 @@ function draw_ui()
 end
 -->8
 --collisions
-
 function collide_map(obj,aim,flag)
 	--obj = table x,y,w,h
 
@@ -317,13 +345,14 @@ function enemy_in_range(i)
 	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 		return true
 	end
+	
 end
 
-function attack_boss()
-	local x1=0 local y1=0
-	local x2=0 local y2=0
-	local enx1=0 local eny1=0
-	local enx2=0 local eny2=0
+function	boss_in_range()
+			local x1=0 local y1=0
+			local x2=0 local y2=0
+			local enx1=0 local eny1=0
+			local enx2=0 local eny2=0
 			
 	x1=reticle.x
 	x2=reticle.x+reticle.w
@@ -335,14 +364,12 @@ function attack_boss()
 	eny1=cboss.y
 	eny2=cboss.y+cboss.h
 			
-	if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
-		or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
-		or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
-		or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
-	 	if btn(5) then
-	 		cboss.hp -= 1
-		end
-	end
+			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+	 		return true
+			end
 end
 -->8
 --map functions--
@@ -370,6 +397,7 @@ end
 
 function updatemap()
 	enemy = {}
+	projectiles = {}
 	
 	for i in all(tiles) do
 		mset(i.x, i.y, 45)
@@ -384,12 +412,13 @@ function updatemap()
 		make_mboss()
 		spawn_mboss()
 	elseif level == 6 then
-		level = 1
 		difficulty = difficulty + 1
-		if difficulty == 4 then
+		if difficulty >= 4 then
 			make_mboss()
 			spawn_nmreboss()
 		else
+			level = 1
+			state = 1
 			genlevel()
 			genenemies()
 		end
@@ -452,7 +481,7 @@ function plr_update()
 	
 	ranintochest(plr, plr.lastmove)
 	attack_enemy()
-	if level == 5 then
+	if level == 5 or difficulty >= 4 then
 		attack_boss()
 	end
 	
@@ -485,13 +514,11 @@ function plr_update()
 		if collide_map(plr,"right",0) then
 			plr.x -= 1
 		end
-		if plr.x > 128 then
+		if plr.x > 120 then
 			updatemap()
 			plr.x = 8
 		end
-	end
-	
-	if btn(2) then
+	elseif btn(2) then
 		plr.y -= 1
 		plr.move = "up"
 		plr.moving=true
@@ -533,14 +560,32 @@ function attack_enemy()
 			i.health -= 1
 			if plr.move == "right" then
 				i.x += 6
+				while i.x > 120 or collide_map(i,"right",0) do
+					i.x -= 1
+				end
 			elseif plr.move == "left" then
 				i.x -= 6
+				while i.x < 0 or collide_map(i,"left",0) do
+					i.x -= 1
+				end
 			elseif plr.move == "up" then
 				i.y -= 6
+				while i.y < 0 or collide_map(i,"up",0) do
+					i.y -= 1
+				end
 			elseif plr.move == "down" then
 				i.y += 6
+				while i.y > 128 or collide_map(i,"down",0) do
+					i.y -= 1
+				end
 			end
 		end
+	end
+end
+
+function attack_boss()
+	if boss_in_range(i) and btnp(5) then
+			cboss.hp -= 1		
 	end
 end
 
@@ -586,7 +631,7 @@ function genenemies()
           temp.moving = false
           temp.d = 0
           temp.acc = 0.35
-		  temp.spd = 1
+		  						temp.spd = 1
           temp.anim = 0
           temp.move = "down"
           temp.health = 3
@@ -879,44 +924,118 @@ function detect(enem)
 		end
 	end
 end
+
 function enemy_attack(enem)
 		attacked = false
 		enem.atttime += 1
 		if enem.atttime >= enem.attcd then
-			for i in all(enem.attack) do
-				if i == "bite" then
-					if melee_attack(enem, enem.move) then
-						attacked = true
-						enem.atttime = 0
-					end
-				elseif i == "slam" then
-					if melee_attack(enem, enem.move) then
-						attacked = true
-						enem.atttime = 0
-					end
-				elseif i == "shoot" then
-					if can_shoot() then
-						attacked = true
-						enem.atttime = 0
-					end
-				elseif i == "scare" then
-					if can_scare() then
-						attacked = true
-						enem.atttime = 0
-					end
-				end
+		  if enem.name == "slime"
+		  or enem.name == "snake"
+		  or enem.name == "skull"
+		  or enem.name == "ghost"
+		  or enem.name == "shadow"
+		  or enem.name == "spikes" then
+			  if melee_attack(enem, enem.move) then
+				  attacked = true
+          enem.atttime = 0
+			  end
+		  elseif enem.name == "fire"
+		  or enem.name == "eye" then
+			  if can_shoot(enem) then
+				  attacked = true
+        enem.atttime = 0
 			end
+		elseif enem.name == "blood" then
+		 if can_dash(enem) then
+		 	attacked = true
+      enem.atttime = 0
+		 end
 		end
 		return attacked
 	end
 
-function can_shoot()
-	return false
+function can_shoot(enem)
+	if plr.y == enem.y then
+		direction = "left"
+		if plr.x > enem.x then
+			direction = "right"
+		end
+		if enem.name == "eye" then
+			shoot(106,enem.x, enem.y, direction, 3)
+			return true
+		elseif enem.name == "fire" then
+			shoot(84,enem.x, enem.y, direction, 3)
+			return true
+		end
+	elseif plr.x == enem.x then
+		direction = "up"
+		if plr.y > enem.y then
+			direction = "down"
+		end
+		if enem.name == "eye" then
+			shoot(107,enem.x, enem.y, direction, 3)
+			return true
+		elseif enem.name == "fire" then
+			shoot(123,enem.x, enem.y, direction, 3)
+			return true
+		end
 	end
+	return false
+end
 
-function can_scare()
+function shoot(s,x,y,direc,spd)
+	temp = {}
+	temp.x = x
+	temp.y = y
+	temp.w = 8
+	temp.h = 8
+	temp.sp = s
+	temp.direction = direc
+	temp.speed = spd
+	add(projectiles,temp)
+end
+
+function proj_update()
+	for i in all(projectiles) do
+		if direction == "right" then
+		i.x += i.speed
+		if collide_map(i,"right",0) then
+			del(projectiles,i)
+		elseif i.x/8 == plr.x/8 and i.y/8 == plr.y/8 then
+			plr.health -= 1
+			del(projectiles,i)
+		end
+	elseif direction == "left" then
+		i.x -= i.speed
+		if collide_map(i,"left",0) then
+			del(projectiles,i)
+		elseif i.x == plr.x and i.y == plr.y then
+			plr.health -= 1
+			del(projectiles,i)
+		end
+	elseif direction == "up" then
+		i.y -= i.speed
+		if collide_map(i,"up",0) then
+			del(projectiles,i)
+		elseif i.x == plr.x and i.y == plr.y then
+			plr.health -= 1
+			del(projectiles,i)
+		end
+	elseif direction == "down" then
+		i.y += i.speed
+		if collide_map(i,"down",0) then
+			del(projectiles,i)
+		elseif i.x == plr.x and i.y == plr.y then
+			plr.health -= 1
+			del(projectiles,i)
+		end
+	end
+	end
+end
+
+function can_dash(enem)
  return false
- end
+end
 
 -->8
 -- animations and dialogue --
@@ -1046,9 +1165,11 @@ function make_mboss()
 	
 	nmre = newboss("mr.nightmare",7)
 	nmre.sprts = {132} 
-	nmre.sp = 132 
+	nmre.sp = 132
+	nmre.w = 32
+	nmre.h = 32 
 	
-	mbosses = {clock, grim, fish, bat} 
+	mbosses = {clock, grim, fish, bat, nmre} 
 end 
 
 
@@ -1065,6 +1186,12 @@ function spawn_mboss()
 			cboss.spawn = true 
 	end 
 end
+
+function spawn_nmreboss() 
+	--pick a boss we have not spawned 
+	cboss = mbosses[5]  
+end
+
 --draw the bosses 
 function draw_boss()
 
@@ -1096,7 +1223,7 @@ function draw_boss_health()
 	spr(5,40+(i*8),8)
 	
 end
-
+ 
  
 function draweye()
 	
@@ -1255,22 +1382,22 @@ __gfx__
 333333333363333332333333399983333998333333333333338a7a99399a7a9349aaaaaaaaaaaa9036d6ddd03067676033333603333340333333333170711110
 3666333336663333333233333333338393333333333333333339a9933339a933494a0aaaaa0aa49036d600033306d60333333033333302033333333100011110
 33333333333333333333333333933333333333a333333333333333333333333349aaa0a90000aa90300033333330003333333333333330033333333101111110
-333333333333333333333333333333333333333333333343333333330000000049aaaaa0aa0aaa90333333330000000033333333333330203333333111111103
-4399993333333333399993333999934333333333399993432322223300000000494aaaa0aaaaa490330003330000000033333333333333003333333111111103
-4999ff9334999933999ff9339999994339999343999999432222ee230000000049aaaaa0aaaaaa90308080330000000033333333333333003333333011111113
-4f0ff0f33499ff93f0ff0f339999994399999943999999f32e8ee8e300000000499aaa000aaaa9900d8086030000000033333333333333333333333011111113
-43ffff33340ff0f33ffff333399993439999994339999d4323eeee330000000034994aa0aaa499030d8086030000000033333333333333333333333311103113
-fddddd3334ffff334f4444443dddddf339999343fdddd333e888883300000000334999aa4a9990330dd8dd030000000033333333333333333333333301103333
-43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e300000000333449999990033330ddd0330000000033333333333333333333333333103313
-3383383334ddddf33833833338338333fdddd3433833833333233233000000003333300000003333330003330000000033333333333333333333333313033333
-3333333333333333333f333333330003330999000099903333333333336663363333333333333333000000000000000000000000000000000000000000000000
-333633333333342333f7e3333330665330ff99999999ff0333333333363336333366333333333333000000000000000000000000000000000000000000000000
-333633333333423333eee3333366555330ff79999999ff0333aaa333636633633663633333333333000000000000000000000000000000000000000000000000
-3336333333342333333e333333655043330f70799079f0333aaaaa33636333633633633333666333000000000000000000000000000000000000000000000000
-3336333333423333333233333650334333077007700990903aaaaa33633333633366333333366633000000000000000000000000000000000000000000000000
-33999333342333333332333335033343330777777777999030000a33363336333333363333333333000000000000000000000000000000000000000000000000
-333c333333333333333233333033334330ff7777777ff90333333633336663633333333333333333000000000000000000000000000000000000000000000000
-333c3333333333333333333333333343330000000000003333333333333333333333333333333333000000000000000000000000000000000000000000000000
+333333333333333333333333333333333333333333333343333333330000000049aaaaa0aa0aaa90333333333333333333333333333330203333333111111103
+4399993333333333399993333999934333333333399993432322223300000000494aaaa0aaaaa49033333333333c333333333333333333003333333111111103
+4999ff9334999933999ff9339999994339999343999999432222ee230000000049aaaaa0aaaaaa90333333333333333333333333333333003333333011111113
+4f0ff0f33499ff93f0ff0f339999994399999943999999f32e8ee8e300000000499aaa000aaaa990cc3cc3c3333c333333333333333333333333333011111113
+43ffff33340ff0f33ffff333399993439999994339999d4323eeee330000000034994aa0aaa4990333333333333c333333333333333333333333333311103113
+fddddd3334ffff334f4444443dddddf339999343fdddd333e888883300000000334999aa4a999033333333333333333333333333333333333333333301103333
+43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e300000000333449999990033333333333333c333333333333333333333333333333103313
+3383383334ddddf33833833338338333fdddd343383383333323323300000000333330000000333333333333333c333333333333333333333333333313033333
+3333333333333333333f333333330003330999000099903333333333336663363333333333333333000000003939a93300000000000000000000000000000000
+333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333300000000339a7a9300000000000000000000000000000000
+333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333300000000339a7a9300000000000000000000000000000000
+3336333333342333333e333333655043330f70799079f03331111133636333633633633333666333000000003389a98300000000000000000000000000000000
+33363333334233333332333336503343330770077009909031111133633333633366333333366633000000003338983300000000000000000000000000000000
+33999333342333333332333335033343330777777777999031000033363336333333363333333333000000003333833900000000000000000000000000000000
+333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333300000000a333833300000000000000000000000000000000
+333c3333333333333333333333333343330000000000003333333333333333333333333333333333000000003333333300000000000000000000000000000000
 33333033033333333333333333333333333333333333333333333333333333333330000000003333333300000000333333333333338333333333333333833333
 3333300300333333333333333333333333333333333333333333333333333333330dd010dddd00333300dd01110d003333333333938333333333338333333333
 333330030030333333333333333333333333333333000000000333333333333330dd01110ddddd0330dddd01110ddd0333333333998333333333333333333333
