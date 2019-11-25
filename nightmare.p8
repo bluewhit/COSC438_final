@@ -156,8 +156,10 @@ function _draw()
    	end
    	draw_boss_health()
    end
+   
    draw_ui()
-
+			draw_diag()
+			
  elseif state==3 then
    cls()
    camera(0,0)
@@ -195,7 +197,11 @@ function draw_main()
    end
   
    for j in all(enemy) do
-  		spr(j.s, j.x, j.y)
+  		an_enemy(j)
+   end
+   
+   for k in all(projectiles) do
+   	spr(k.sp, k.x, k.y)
    end
    
    for k in all(projectiles) do
@@ -461,32 +467,7 @@ function updatemap()
  end
 end
 
---function to pick items 
-function spawnshop()
-	
-	dis_diag = t
-	input = f
-	diag = "do you want to buy something?"
 
-	draw_diag()
-
-	item1 = buy[flr(rnd(5)) + 1]
-	item2 = buy[flr(rnd(5)) + 1] 
-	
-end
- 
-function drawshop()
-	--spr
-	spr(152,48,56,4,3)
-	--hamster
-	spr(116,56,56,2,1)
-	spr(118,60,51)
-	
-	--two items 
-	spr(item1,56,64)
-	spr(item2,64,64)
-
-end  
 
 -->8
 --player functions--
@@ -559,7 +540,7 @@ function plr_update()
 		reticle_aim("down")
 
 		--animate 
-		plr.flp = false
+		plr.flp = f
 		plr_walk()
 		
 		if collide_map(plr,"down",0) then
@@ -582,21 +563,29 @@ function attack_enemy()
 				while i.x > 120 or collide_map(i,"right",0) do
 					i.x -= 1
 				end
+				plr.sp = 98
+				plr.flp = f
 			elseif plr.move == "left" then
 				i.x -= 6
 				while i.x < 0 or collide_map(i,"left",0) do
 					i.x -= 1
 				end
+				plr.sp = 98
+				plr.flp = t
 			elseif plr.move == "up" then
 				i.y -= 6
 				while i.y < 0 or collide_map(i,"up",0) do
 					i.y -= 1
-				end
+				end		
+				plr.sp=101
+				plr.flp = f 
 			elseif plr.move == "down" then
 				i.y += 6
 				while i.y > 128 or collide_map(i,"down",0) do
 					i.y -= 1
 				end
+				plr.sp = 103
+				plr.flp = f 
 			end
 		end
 	end
@@ -966,6 +955,7 @@ function enemy_attack(enem)
 		end
 		return attacked
 	end
+end 
 
 function can_shoot(enem)
 	if plr.y == enem.y then
@@ -1117,7 +1107,7 @@ function can_dash(enem)
 end
 
 -->8
--- animations and dialogue --
+-- animations, dialogue, shop --
 
 --player--
 --walk left, right, down 
@@ -1145,23 +1135,104 @@ function plr_up()
 end 
 
 -- enenmies
-
---slime counter 
-sd = 8 
 function an_enemy(i)
-	
-	sd = sd-1
-	if i.name == "slime" and sd < 0 then 
-		
-		--add in code to move enemy 
-		
-		i.s = i.s+1
-			
-		if i.s > 65 then i.s = 64 end
-		sd = 10 
-		sd = 8  
+	--check which way to flip
+	eflp = f
+	if plr.x > i.x then 
+		eflp = t
 	end 
+	
+	func = f 
+	
+	if i.name == "slime" then
+		func = t 
+		sf = 64
+		nf = 2 
+		sp = 8
+		  
+	elseif i.name == "snake" then 
+		func = t 
+		sf = 66
+		nf = 2 
+		sp = 8
+		
+	elseif i.name == "shadow" then 
+		if i.moving == false then 
+			i.s = 73
+		else 
+			i.s = 72
+		end
+		
+	elseif i.name == "eye" then 
+		if i.moving == f then 
+			i.s = 74 
+		elseif i.moving == true then 
+			if plr.y < i.y then
+				i.s = 122
+			else
+			 i.s = 75
+			end 
+		end
+		
+	elseif i.name == "skull" then 
+		if plr.y > i.y then 
+			i.s = 91
+		else 
+			i.s = 68
+		end 
+	
+	elseif i.name == "ghost" then
+		if i.moving == f then 
+			i.s = 71
+		else 
+			func = t 
+			sf = 69
+			nf = 2 
+			sp = 8 
+		end
+		
+	elseif i.name == "blood" then
+		if i.moving == f then 
+			i.s = 77
+		elseif plr.y < i.y then 
+			i.s = 79
+		elseif plr.y > i.y then 
+			i.s = 76 
+		else
+			i.s = 79
+		end  
+	elseif i.name == "fire" then 
+		func = t 
+		sf = 86
+		nf = 2 
+		sp = 6
+	
+	end
+	
+	-- if we use the function
+	if func == t then 
+		anim(i,sf,nf,sp,eflp)
+	else 
+		spr(i.s,i.x,i.y,1,1,eflp)
+	end
+	  
 end 
+
+--animation
+function anim(o,sf,nf,sp,fl)
+  if(not o.a_ct) o.a_ct=0
+  if(not o.a_st) o.a_st=0
+
+  o.a_ct+=1
+
+  if(o.a_ct%(30/sp)==0) then
+    o.a_st+=1
+    if(o.a_st==nf) o.a_st=0
+  end
+
+  o.a_fr=sf+o.a_st
+  spr(o.a_fr,o.x,o.y,1,1,fl)
+end
 	
 -- dialogeeee
 function draw_box()
@@ -1193,13 +1264,140 @@ function draw_diag()
 		draw_box() 
 		print(sub(diag,1,flr(d_tick+6/3)),8,107)
 		d_tick+=1
-		if d_tick > 90 and input == false then
+		if d_tick > 90 and input == f then
 			dis_diag = false
 			diag = ""
 			d_tick = 0
 		end
 	end 
+end 
+
+--handle shop is used in the update
+function handleshop()
+
+	if not spawned then 
+ 	spawnshop() 
+ end 
+ 
+ if shopping then 
+		use_menu()
+	else 
+		plr_update()
+	end 
+	
 end
+
+--function to spawn our shop 
+function spawnshop()
+
+	spawned = t
+	
+	dis_diag = t
+	input = f
+	diag = "do you want to buy something?"
+
+	draw_diag()
+
+	item1 = buy[flr(rnd(3)) + 1]
+	item2 = buy[flr(rnd(3)) + 1] 
+	
+	mset(7,8,item1)
+	mset(8,8,item2)
+	
+	
+end
+
+--draws shop
+function drawshop()
+	--spr
+	spr(152,48,56,4,3)
+	--hamster
+	spr(116,56,56,2,1)
+	spr(118,60,51)
+	
+	--two items 
+	spr(item1,56,64)
+	spr(item2,64,64)
+	
+	print(map_tile)
+
+end  
+
+--info shows the items info
+function i_info(it)
+	
+	diag = "this is a"
+	
+	if it == 51 or item == 50 then 
+		diag = diag.." heart.\nit willraise your health by one."
+	elseif it == 36 then
+		diag = diag.." key.\nyou can use these to open chests."
+	elseif it == 16 then 
+		diag = diag.." potion.\nthis will restore your health."
+	end 
+	
+	dis_diag = t
+		
+end 
+
+--wip
+--this buys the item and applies effect
+function buyitem(it)
+	diag = "thanks for shopping!"
+	dis_diag = t
+	
+	shopping = f   
+end 
+
+--draws the would u like to buy
+--will add the amount with it 
+function draw_menu() 
+	t1 = "buy"
+	t2 = "info"
+	
+	if select == 1 then
+		t1 = "➡️"..sub(t1,1)
+	elseif select == 2 then 
+		t2 = "➡️"..sub(t2,1)
+	end
+
+	print(t1,16,120)
+	print(t2,80,120)
+
+end
+
+-- use the selection menu for 
+-- our shop 
+function use_menu()	
+	if btn(0) then
+		if not (select % 2 == 1) then
+			select-=1
+		end
+	elseif btn(1) then
+		if not (select % 2 == 0) then
+			select +=1
+		end
+	elseif btnp(4) then
+		shopping = f 
+	elseif btnp(5) then
+	 selected = true
+		selection = select
+	end
+	
+	selection_check()
+end
+
+--checks which one were trying to do
+function selection_check()
+	if selected then
+		selected = false
+		if select == 1 then 
+		 buyitem(map_tile) 
+		else 
+			i_info(map_tile)  
+		end 
+	end 
+end  
 -->8
 -- boss code 
 
@@ -1335,10 +1533,6 @@ function draweye()
 	
 end  
  
-function flash()
-	
-end 
-
 function boss_update()
 	--an_enemy(cboss)
 		if boss_attack() then
@@ -1494,22 +1688,22 @@ __gfx__
 333333333363333332333333399983333998333333333333338a7a99399a7a9349aaaaaaaaaaaa9036d6ddd03067676033333603333340333333333170711110
 3666333336663333333233333333338393333333333333333339a9933339a933494a0aaaaa0aa49036d600033306d60333333033333302033333333100011110
 33333333333333333333333333933333333333a333333333333333333333333349aaa0a90000aa90300033333330003333333333333330033333333101111110
-333333333333333333333333333333333333333333333343333333330000000049aaaaa0aa0aaa90333333333333333333333333333330203333333111111103
-4399993333333333399993333999934333333333399993432322223300000000494aaaa0aaaaa49033333333333c333333333333333333003333333111111103
-4999ff9334999933999ff9339999994339999343999999432222ee230000000049aaaaa0aaaaaa90333333333333333333333333333333003333333011111113
-4f0ff0f33499ff93f0ff0f339999994399999943999999f32e8ee8e300000000499aaa000aaaa990cc3cc3c3333c333333333333333333333333333011111113
-43ffff33340ff0f33ffff333399993439999994339999d4323eeee330000000034994aa0aaa4990333333333333c333333333333333333333333333311103113
-fddddd3334ffff334f4444443dddddf339999343fdddd333e888883300000000334999aa4a999033333333333333333333333333333333333333333301103333
-43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e300000000333449999990033333333333333c333333333333333333333333333333103313
-3383383334ddddf33833833338338333fdddd343383383333323323300000000333330000000333333333333333c333333333333333333333333333313033333
-3333333333333333333f333333330003330999000099903333333333336663363333333333333333000000003939a93333393333333333330000000000000000
-333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333300000000339a7a9333303333333333330000000000000000
-333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333300000000339a7a9333303333333303330000000000000000
-3336333333342333333e333333655043330f70799079f03331111133636333633633633333666333000000003389a98333303333900000330000000000000000
-33363333334233333332333336503343330770077009909031111133633333633366333333366633000000003338983333303333333303330000000000000000
-33999333342333333332333335033343330777777777999031000033363336333333363333333333000000003333833933303333333333330000000000000000
-333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333300000000a333833333000333333333330000000000000000
-333c3333333333333333333333333343330000000000003333333333333333333333333333333333000000003333333333303333333333330000000000000000
+333333333333333333333333333333333333333333333343333333333399993349aaaaa0aa0aaa90333333333333333333333333333330203333333111111103
+439999333333333339999333399993433333333339999343232222333999ff93494aaaa0aaaaa49033333333333c333333333333333333003333333111111103
+4999ff9334999933999ff9339999994339999343999999432222ee233f0ff0f349aaaaa0aaaaaa90333333333333333333333333333333003333333011111113
+4f0ff0f33499ff93f0ff0f339999994399999943999999f32e8ee8e334ffff33499aaa000aaaa990cc3cc3c3333c333333333333333333333333333011111113
+43ffff33340ff0f33ffff333399993439999994339999d4323eeee333fdddd3334994aa0aaa4990333333333333c333333333333333333333333333311103113
+fddddd3334ffff334f4444443dddddf339999343fdddd333e888883334ddddf3334999aa4a999033333333333333333333333333333333333333333301103333
+43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e334833833333449999990033333333333333c333333333333333333333333333333103313
+3383383334ddddf33833833338338333fdddd343383383333323323334333333333330000000333333333333333c333333333333333333333333333313033333
+3333333333333333333f333333330003330999000099903333333333336663363333333333333333333333333939a93300000000000000000000000000000000
+333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333333000333339a7a9300000000000000000000000000000000
+333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333330808033339a7a9300000000000000000000000000000000
+3336333333342333333e333333655043330f70799079f033311111336363336336336333336663330d8086033389a98300000000000000000000000000000000
+333633333342333333323333365033433307700770099090311111336333336333663333333666330d8886033338983300000000000000000000000000000000
+339993333423333333323333350333433307777777779990310000333633363333333633333333330dd8dd033333833900000000000000000000000000000000
+333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333330ddd033a333833300000000000000000000000000000000
+333c3333333333333333333333333343330000000000003333333333333333333333333333333333330003333333333300000000000000000000000000000000
 33333033033333333333333333333333333333333333333333333333333333333330000000003333333300000000333333333333338333333333333333833333
 3333300300333333333333333333333333333333333333333333333333333333330dd010dddd00333300dd01110d003333333333938333333333338333333333
 333330030030333333333333333333333333333333000000000333333333333330dd01110ddddd0330dddd01110ddd0333333333998333333333333333333333
