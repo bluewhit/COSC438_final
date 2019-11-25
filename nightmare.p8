@@ -61,7 +61,7 @@ function _init()
  dis_diag = f
 	diag = ""
 	d_tick = 0
-	
+  
 	music(1)
 end
 
@@ -960,6 +960,7 @@ function enemy_attack(enem)
 		 end
 		end
 		return attacked
+	end
 end 
 
 function can_shoot(enem)
