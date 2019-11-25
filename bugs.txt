@@ -1,0 +1,3 @@
+list of bugs:
+
+-first chest will be interacted with, following ones will not
