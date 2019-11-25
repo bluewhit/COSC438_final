@@ -182,6 +182,10 @@ function draw_main()
    for k in all(projectiles) do
    	spr(k.sp, k.x, k.y)
    end
+   
+   for k in all(projectiles) do
+   	spr(k.sp, k.x, k.y)
+   end
 end
 
 function draw_ui()
@@ -540,7 +544,6 @@ function attack_enemy()
 				while i.x > 120 or collide_map(i,"right",0) do
 					i.x -= 1
 				end
-				
 				plr.sp = 98
 				plr.flp = f
 			elseif plr.move == "left" then
@@ -548,25 +551,20 @@ function attack_enemy()
 				while i.x < 0 or collide_map(i,"left",0) do
 					i.x -= 1
 				end
-				
 				plr.sp = 98
 				plr.flp = t
-				
 			elseif plr.move == "up" then
 				i.y -= 6
 				while i.y < 0 or collide_map(i,"up",0) do
 					i.y -= 1
-				end
-				
+				end		
 				plr.sp=101
 				plr.flp = f 
-				
 			elseif plr.move == "down" then
 				i.y += 6
 				while i.y > 128 or collide_map(i,"down",0) do
 					i.y -= 1
 				end
-				
 				plr.sp = 103
 				plr.flp = f 
 			end
