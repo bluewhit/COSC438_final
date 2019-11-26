@@ -201,6 +201,7 @@ function _draw()
    	end
    end
    draw_ui()
+   draw_diag()
 
  elseif state==3 then
    cls()
@@ -239,7 +240,7 @@ function draw_main()
    end
   
    for j in all(enemy) do
-  		spr(j.s, j.x, j.y)
+  		an_enemy(j)
    end
    
    for k in all(projectiles) do
@@ -1464,15 +1465,20 @@ end
 
 --info shows the items info
 function i_info(it)
-	
+	if it == item1.tile then 
+			thissp = item1.sp
+		end 
+		if it == item2.tile then 
+			thissp = item2.sp
+		end 
 	diag = "this is a"
 	
-	if it == 51 or item == 50 then 
-		diag = diag.." heart.\nit willraise your health by one."
-	elseif it == 36 then
-		diag = diag.." key.\nyou can use these to open chests."
-	elseif it == 16 then 
-		diag = diag.." potion.\nthis will restore your health."
+	if thissp == 51 or thissp == 50 then 
+		diag = diag.." heart.\nit will raise your \nhealth by one."
+	elseif thissp == 36 then
+		diag = diag.." key.\nyou can use these \nto open chests."
+	elseif thissp == 16 then 
+		diag = diag.." potion.\nthis will restore \nyour health."
 	end 
 	
 	dis_diag = t
