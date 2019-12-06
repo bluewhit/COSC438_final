@@ -88,8 +88,14 @@ function _update()
    if btnp(4) then
      step += 1
    end
+   if btnp(5) then
+     step -= 1
+   end
    if step >= 6 then
      state = 1
+   end
+   if step < 0 then
+     step = 0
    end
  elseif state == 1 then
  			
@@ -283,6 +289,7 @@ end
 function advanceui()
   if display then
 		  print("z➡️", 112, 120, 7)
+		  print("⬅️x", 0, 120, 7)
 		end
 		counter += 1
 		if counter > 25 then
