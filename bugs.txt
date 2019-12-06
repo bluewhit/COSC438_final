@@ -1,0 +1,4 @@
+list of bugs:
+
+-first chest will be interacted with, following ones will not
+- if player defeats a boss the shop will spawn on top of them and they cannot move 
