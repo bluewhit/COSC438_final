@@ -92,7 +92,6 @@ end
 function stop_muzak()
 	music(-1) playing=false
 end
-
 -->8
 --update and draw--
 
@@ -1070,6 +1069,7 @@ function enemy_update()
 						i.xgoal = i.x
 						i.ygoal = i.y
 					end
+					end
 				end
 			end
 		else
@@ -1126,6 +1126,7 @@ function enemy_update()
 					if not h then
 						i.xgoal = i.x
 						i.ygoal = i.y
+					end
 					end
 				end
 		end
@@ -1216,6 +1217,22 @@ function enret_update(i)
 	end
 end
 
+function enret_update(i)
+	if i.move == "left" then
+		i.enret.x = i.x-i.enret.w
+		i.enret.y = i.y
+	elseif i.move == "right" then
+		i.enret.x = i.x+i.w
+		i.enret.y = i.y
+	elseif i.move == "up" then
+		i.enret.x = i.x
+		i.enret.y = i.y-i.enret.h
+	elseif i.move == "down" then
+		i.enret.x = i.x
+		i.enret.y = i.y+i.h
+	end
+end
+
 function detect(enem)
 	if enem.name == "slime" then
 		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
@@ -1284,13 +1301,13 @@ function can_shoot(enem)
 			direction = "right"
 		end
 		if enem.name == "eye" then
-			shoot(106,enem.x, enem.y, direction, 3)
+			shoot(106,enem.x, plr.y, direction, 3)
 			return true
 		elseif enem.name == "fire" then
 			shoot(84,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clock" then
-			shoot(125,enem.x, enem.y, direction, 3)
+			shoot(125,enem.x, plr.y, direction, 3)
 			return true
 		end
 	elseif plr.x >= enem.x and plr.x <= enem.y+enem.w then
@@ -1299,7 +1316,7 @@ function can_shoot(enem)
 			direction = "down"
 		end
 		if enem.name == "eye" then
-			shoot(107,enem.x, enem.y, direction, 3)
+			shoot(107,plr.x, enem.y, direction, 3)
 			return true
 		elseif enem.name == "fire" then
 			shoot(123,enem.x, enem.y, direction, 2)
@@ -1810,6 +1827,7 @@ function make_mboss()
 		w=8,
 		h=8
 	}  
+
 	
 	nmre = newboss("mr.nightmare",7)
 	nmre.sprts = {132} 
@@ -2244,4 +2262,3 @@ __music__
 00 41424344
 00 41424344
 00 4d4e4344
-
