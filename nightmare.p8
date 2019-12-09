@@ -216,7 +216,6 @@ function _draw()
 		draw_intro()
  elseif state==1 then
  	
- 	draw_diag()
 		draw_main()
 		draw_ui()
  	draw_enemy_health()
@@ -246,7 +245,6 @@ function _draw()
    	end
    end
    draw_ui()
-   draw_diag()
 
  elseif state==3 then
    cls()
@@ -260,6 +258,8 @@ function _draw()
    map(70,70,0,0,16,16)
    print("game over.\npress z to restart",40,60,7)
  end
+ 
+ draw_diag()
 end
 
 function h_center(s)
@@ -428,28 +428,45 @@ function ranintochest(obj, aim)
 				mset(x1, y1, 18)
 				plr.coins += 10
 				plr.keys -= 1
+				
+				diag = "found 10 coins!"
+				dis_diag = t
+				d_tick = 50
 			end
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
 				mset(x1, y2, 18)
 				plr.coins += 10
 				plr.keys -= 1
+				
+				diag = "found 10 coins!"
+				dis_diag = t
+				d_tick = 50
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
 				mset(x2, y1, 18)
 				plr.coins += 10
 				plr.keys -= 1
+				
+				diag = "found 10 coins!"
+				dis_diag = t
+				d_tick = 50
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
 				mset(x2, y2, 18)
 				plr.coins += 10
 				plr.keys -= 1
+				
+				diag = "found 10 coins!"
+				dis_diag = t
+				d_tick = 50
 			end
 		end	
 	end
 end
+
 
 function melee_attack(obj,aim)
 	local x1=0 local y1=0
@@ -1756,7 +1773,11 @@ end
 function draw_boss()
 
 	if cboss.name != "mr.nightmare" then
-		ani_boss()
+		if cboss.name == "rotting fish" then
+			ani_boss()
+		else
+			spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
+			end
 	else 
 		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
 		draweye()
