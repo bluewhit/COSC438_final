@@ -719,7 +719,7 @@ function plr_update()
 			plr.y = 16
 
 			end
-	elseif spawned == t and btn(5) then
+	elseif spawned == t and btnp(5) then
 		if enemy_in_range(item1) and not item1.b then
 			shopping = t
 			map_tile = mget(item1.x,item1.y)
@@ -1340,15 +1340,9 @@ function an_plr()
 	
 	pflp = f
 	if plr.move == "up" then  
-		psf = 99
-		pnf = 2 
-		psp = 5
-		patk = 101
+		psf,pnf,psp,patk = 99,2,5,101
 	else
-	 psf = 96
-	 pnf = 2
-	 psp = 5 
-	 patk = 98
+	 psf,pnf,psp,patk = 96,2,5,98
 	 if plr.move == "left" then 
 	 	pflp = t 
 	 end 
@@ -1368,18 +1362,14 @@ end
 -- enenmies
 function an_enemy(i)
 	--check which way to flip
-	eflp = f
-	func = f 
+	eflp,func = f,f
 	
 	if plr.x > i.x then 
 		eflp = t
 	end 
 	
 	if i.name == "slime" then
-		func = t 
-		sf = 64
-		nf = 2 
-		sp = 8
+		func,sf,nf,sp = t,64,2,8
 		  
 	elseif i.name == "shadow" then 
 		if not i.moving then 
@@ -1410,10 +1400,7 @@ function an_enemy(i)
 		if not i.moving then 
 			i.s = 71
 		else 
-			func = t 
-			sf = 69
-			nf = 2 
-			sp = 8 
+			func,sf,nf,sp = t,69,2,8  
 		end
 		
 	elseif i.name == "blood" then
@@ -1427,16 +1414,9 @@ function an_enemy(i)
 			i.s = 79
 		end  
 	elseif i.name == "fire" then 
-		func = t 
-		sf = 86
-		nf = 2 
-		sp = 6
+		func,sf,nf,sp = t,86,2,6 
 	elseif i.name == "spike" then
-		func = t 
-		sf = 80
-		nf = 2
-		sp = 9
-	
+		func,sf,nf,sp = t,80,2,9 
 	end
 	
 	-- if we use the function
@@ -1501,9 +1481,7 @@ function draw_diag()
 		print(sub(diag,1,flr(d_tick+6/3)),8,107)
 		d_tick+=1
 		if d_tick > 90 then
-			dis_diag = false
-			diag = ""
-			d_tick = 0
+			dis_diag,diag,d_tick = f,"",0
 		end
 	end 
 end 
@@ -1695,7 +1673,6 @@ newboss = function (name,hp)
 	name = name, 
 	hp = hp,
 	spawned = false,
-	sprts = {},
 	enret = {},
 	flp = false,
 	last = time() - 10,
@@ -1714,11 +1691,9 @@ end
 --function to make mini bosses and to set their sprites 
 function make_mboss()
 	clock = newboss("tik tok clok", 3) 
-	clock.sprts = {88} 
 	clock.sp = 88
 	
 	grim = newboss("grim reaper", 4)
-	grim.sprts = {92,94}
 	grim.sp = 94
 	scythe.x = grim.x - 16
 	scythe.y = grim.y 
@@ -1726,7 +1701,6 @@ function make_mboss()
 	scythe.enret.y = scythe.y
 	
 	fish = newboss("rotting fish", 4)
-	fish.sprts = {160,162}
 	fish.sp = 160
 	fish.spd = 0.5
 	fish.enret = {
@@ -1737,7 +1711,6 @@ function make_mboss()
 	}  
 	
 	nmre = newboss("mr.nightmare",7)
-	nmre.sprts = {132} 
 	nmre.sp = 132
 	nmre.spd = 0.2
 	nmre.enret = {
