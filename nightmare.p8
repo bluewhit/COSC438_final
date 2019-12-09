@@ -1,16 +1,25 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
-
 --init
 function _init()
 	t = true 
 	f = false 
-
+	
+	walls = t
+	display = f
+	counter = 0
+	
+	map_tile=mget(0,0)
+	
+	item1={}
+	item2={}
+	
 	palt(3, true)
 	palt(0, false)
 	state = 0
-	
+	step = 0
+
 	plr = {
 		sp=96,
 		x=16,
@@ -23,9 +32,10 @@ function _init()
 		acc=0.35,
 		anim=0,
 		move="down",
+		maxhp=5,
 		health = 5,
-		coins = 100,
-		keys = 2,
+		coins = 10,
+		keys = 1,
 	}
 	reticle = {
 		sp=38,
@@ -36,13 +46,15 @@ function _init()
 	}
 	
 	--shop init 
-	buy = {16,36,51,53,37}
+	buy = {16,36,51}
 	shp = {}
+	spawned = f
+	select = 1
 
-	level = 1
+	level = 4
 	difficulty = 0
-	enemy = {}
 	tiles = {}
+	enemy = {}
 	mbosses = {}
 	cboss = {}
 	scythe = {
@@ -52,7 +64,13 @@ function _init()
 		x=0,
 		y=0,
 		w=16,
-		h=16
+		h=16,
+		enret = {
+		x=0,
+		y=0,
+		w=8,
+		h=8
+		}
 	}
 	projectiles = {}
  genlevel()
@@ -61,8 +79,18 @@ function _init()
  dis_diag = f
 	diag = ""
 	d_tick = 0
-  
+	
 	music(1)
+end
+
+function start_muzak(n)
+	if not playing then
+		music(n) playing=true
+		end
+end
+
+function stop_muzak()
+	music(-1) playing=false
 end
 
 -->8
@@ -72,42 +100,90 @@ end
 function _update()
  if state == 0 then
    if btnp(4) then
+     step += 1
+   end
+   if btnp(5) then
+     step -= 1
+   end
+   if step >= 6 then
      state = 1
    end
+   if step < 0 then
+     step = 0
+   end
  elseif state == 1 then
+ 			
+ 			--reset shop 
+ 		spawned = f 
+ 		shopping = f 
+ 		mset(7,8,61)
+			mset(8,8,61)
+				
     plr_update()
     enemy_update()
     proj_update()
 
+		if walls then
+			if #enemy <= 0 then
+				local rand = flr(rnd(4))
+				if rand == 0 then
+					mset(6, 1, 61)
+					mset(7, 1, 45)
+					mset(8, 1, 45)
+					mset(9, 1, 61)
+					walls = f
+				elseif rand == 1 then
+					mset(15, 7, 61)
+					mset(15, 8, 45)
+					mset(15, 9, 45)
+					walls = f
+				elseif rand == 2 then
+					mset(6, 15, 61)
+					mset(7, 15, 45)
+					mset(8, 15, 45)
+					mset(9, 15, 61)
+					walls = f
+				elseif rand == 3 then
+					mset(0, 7, 61)
+					mset(0, 8, 45)
+					mset(0, 9, 45)
+					walls = f
+				end
+			end
+		end
    if level == 5 then 
     state = 2
-	end
+			end
 			
 
  elseif state == 2 then
-	plr_update()
+ if shopping and spawned then 
+			use_menu()
+	else 
+		plr_update()
+	end
 	if cboss.hp > 0 then
  	boss_update()
- 	mset(23,1,194)
- 	mset(24,1,194)
- 	mset(25,1,194)
- 	mset(26,1,194)
- 	mset(17,7,209)
- 	mset(17,8,209)
- 	mset(17,9,209)
- 	mset(32,7,209)
- 	mset(32,8,209)
- 	mset(32,9,209)
- 	mset(23,15,194)
- 	mset(24,15,194)
- 	mset(25,15,194)
- 	mset(26,15,194)
+ 	mset(23,1,202)
+ 	mset(24,1,202)
+ 	mset(25,1,202)
+ 	mset(26,1,202)
+ 	mset(17,7,218)
+ 	mset(17,8,218)
+ 	mset(17,9,218)
+ 	mset(32,7,219)
+ 	mset(32,8,219)
+ 	mset(32,9,219)
+ 	mset(23,15,203)
+ 	mset(24,15,203)
+ 	mset(25,15,203)
+ 	mset(26,15,203)
  else
  	if difficulty == 4 then
+ 		stop_muzak()
+ 	 start_muzak(3)
 			state = 3
 		end
-		spawnshop()
-		drawshop()
  	mset(23,1,227)
  	mset(24,1,227)
  	mset(25,1,227)
@@ -122,9 +198,29 @@ function _update()
  	mset(24,15,227)
  	mset(25,15,227)
  	mset(26,15,227)
+ 	
+ 	--shop spawn 
+ 	if not spawned then 
+ 		stop_muzak()
+ 		spawnshop() 
+ 		start_muzak(1)
+	 end
+	 
  end
  proj_update()
-
+ elseif state == 3 then
+ 	if btnp(4) then
+     step += 1
+    end
+    if btnp(5) then
+     step -= 1
+    end
+    if step >= 6 then
+     state = 99
+    end
+   if step < 0 then
+     step = 0
+   end
  elseif state == 4 then
  	if btnp(4) then
    	for i in all(tiles) do
@@ -133,6 +229,10 @@ function _update()
     _init()
     reboot()
   end
+ elseif state == 99 then
+		if btnp(4) then
+			reboot()
+		end
  end
 end
 
@@ -149,43 +249,149 @@ function _draw()
  elseif state==2 then
    cls()
    map(17, 0, 0, 0, 16, 16)
+   drawshop()
+   
+ 		
+ 		if shopping then
+ 			draw_box()
+ 			draw_menu()
+ 		end
    spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
    spr(reticle.sp, reticle.x, reticle.y)
    if cboss.hp > 0 then
    	draw_boss()
-   	if cboss.name == "grim" then
+   	if cboss.name == "grim reaper" then
    		draw_scythe()
    	end
    	draw_boss_health()
+   	for k in all(projectiles) do
+   		spr(k.sp, k.x, k.y)
+   	end
    end
-   
    draw_ui()
-			draw_diag()
-			
+   draw_diag()
+
  elseif state==3 then
    cls()
-   camera(0,0)
-   map(70,70,0,0,16,16)
-   print("you won.\npress z to play again",40,60,7)
+   draw_outro()
 
  elseif state==4 then
    cls()
    camera(0,0)
    map(70,70,0,0,16,16)
    print("game over.\npress z to restart",40,60,7)
+ elseif steate==99 then
+	print("thank you for playing!", h_center("thank you for playing!"), 60)
  end
 end
 
+function h_center(s)
+	return 64-#s*2
+end
+
 function draw_intro()
-   cls()
-   print("use ⬆️⬇️⬅️➡️ \nkeys to move", 24, 16, 7)
-   print("hold ❎ and walk at\nan enemy to attack", 24, 32, 7)
-   print("press ❎ after walking \nup to a chest to open", 24, 48)
-   print("press z to play", 32, 64, 7)
-   print("i can't wait to meet you...", 12, 112, 1)
-   for i = 1,4 do
-     spr(147+i, 40+(8*i), 100)
-   end
+	local text
+    if step == 0 then
+		    cls()
+		    for i=1,5 do
+		      spr(199+i, 8+(8*i) + i, 48)
+		      spr(215+i, 53+(8*i) + i, 48)
+		    end
+		    spr(236, 102, 48)
+		    spr(219, 49, 57)
+		    spr(200, 58, 57)
+		    spr(232, 67, 57)
+		    spr(235, 76, 57)
+		    advanceui()
+    elseif step == 1 then
+		    cls()
+		    text = "bailey is scared."
+		    print(text, h_center(text), 52)
+		    advanceui()
+		    sspr(112, 56, 8, 8, 48, 72, 24, 24)
+    elseif step == 2 then
+		    cls()
+		    text = "monsters haunt his nightmares."
+		    print(text, h_center(text), 52)
+		    sspr(112, 40, 16, 16, 36, 72, 32, 32)
+		    advanceui()
+    elseif step == 3 then
+		    cls()
+		    text = "bailey decides tonight is"
+		    print(text, h_center(text), 52)
+		    text = " the night to put an end to this!"
+      print(text, h_center(text), 58)
+      sspr(0, 48, 8, 8, 48, 72, 24, 24)
+      advanceui()
+    elseif step == 4 then
+		    cls()
+		    text = "do you think it will be easy?"
+		    print(text, h_center(text), 52, 1)
+		    advanceui()
+ 	  elseif step == 5 then
+		    cls()
+   		 print("i can use ⬆️⬇️⬅️➡️ to move!", 0, 16, 7)
+   		 print("if i press ❎ while walking at\nan enemy, i'll attack!", 0, 30)
+   		 print("if i press ❎ after walking up \nto a chest i'll use a key to \nopen it", 0, 52)
+   		 advanceui()
+   		 print("i can't wait to meet you...", h_center("i can't wait to meet you..."), 112, 1)
+   		 for i = 1,4 do
+      		spr(147+i, 36+(8*i), 100)
+   		 end
+     end
+end
+
+function draw_outro()
+	local text
+    if step == 0 then
+		    cls()
+		    text = "with mr. nightmare vanquished"
+		    print(text, h_center(text), 52)
+		    advanceui()
+    elseif step == 1 then
+		    cls()
+		    text = "and all his fears conquered"
+		    print(text, h_center(text), 52)
+		    advanceui()
+		    sspr(112, 40, 16, 16, 36, 72, 32, 32)
+    elseif step == 2 then
+		    cls()
+		    text = "bailey feels far more confident"
+		    print(text, h_center(text), 52)
+		    advanceui()
+    elseif step == 3 then
+		    cls()
+		    text = "and will wake up in the morning"
+		    print(text, h_center(text), 52)
+		    text = "feeling excited and happy."
+      print(text, h_center(text), 58)
+      sspr(0, 48, 8, 8, 48, 72, 24, 24)
+      advanceui()
+    elseif step == 4 then
+		    cls()
+		    text = "but what about"
+		    print(text, h_center(text), 52, 1)
+			text = "his next challenge?"
+			print(text, h_center(text), 60, 1)
+		    advanceui()
+ 	  elseif step == 5 then
+		    cls()
+   			advanceui()
+   			print("i can't wait to meet you...", h_center("i can't wait to meet you..."), 112, 8)
+      		sspr(48, 48, 8, 8, 48, 72, 24, 24)
+     end
+end
+
+function advanceui()
+  if display then
+		  print("z➡️", 112, 120, 7)
+		  print("⬅️x", 0, 120, 7)
+		end
+		counter += 1
+		if counter > 25 then
+		  display = not display
+		  counter = 0
+		end
 end
 
 function draw_main()
@@ -205,10 +411,6 @@ function draw_main()
    for k in all(projectiles) do
    	spr(k.sp, k.x, k.y)
    end
-   
-   for k in all(projectiles) do
-   	spr(k.sp, k.x, k.y)
-   end
 end
 
 function draw_ui()
@@ -218,13 +420,9 @@ function draw_ui()
    spr(36, 128-40, 0)
    print(plr.keys, 128-32, 1, 10)
    
-   for i = 1,5 do
+   for i = 1,plr.maxhp do
      spr(19, -8 + (i*8), 0)
    end  
-   
-   for i = 1,3 do
-     spr(1, 40+(i*8), 0)
-   end
    
    for i = 1,plr.health do
      spr(20, -8 + (i*8), 0)
@@ -287,34 +485,33 @@ function ranintochest(obj, aim)
 	
 	x1/=8  x2/=8
 	y1/=8  y2/=8
-	
+  
 	if plr.keys > 0 then
 		if fget(mget(x1,y1),1) then
 			if btnp(5) then
-			 sfx(3)
 				mset(x1, y1, 18)
-				plr.coins += 1
+				plr.coins += 10
 				plr.keys -= 1
 			end
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
-			 sfx(3)
+				sfx(3)
 				mset(x1, y2, 18)
-				plr.coins += 1
+				plr.coins += 10
 				plr.keys -= 1
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
-			 sfx(3)
+				sfx(3)
 				mset(x2, y1, 18)
-				plr.coins += 1
+				plr.coins += 10
 				plr.keys -= 1
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
-			 sfx(3)
+				sfx(3)
 				mset(x2, y2, 18)
-				plr.coins += 1
+				plr.coins += 10
 				plr.keys -= 1
 			end
 		end	
@@ -322,40 +519,30 @@ function ranintochest(obj, aim)
 end
 
 function melee_attack(obj,aim)
-
-	local x=obj.x local y=obj.y
-	local w=obj.w local h=obj.h
-
 	local x1=0 local y1=0
 	local x2=0 local y2=0
-	
-	if aim=="left" then
-		x1=x-1 y1=y
-		x2=x-w y2=y+h-1
+	local enx1=0 local eny1=0
+	local enx2=0 local eny2=0
+			
+	x1=obj.enret.x
+	x2=obj.enret.x+obj.enret.w
+	y1=obj.enret.y
+	y2=obj.enret.y+obj.enret.h
 		
-	elseif aim=="right" then 
-		x1=x+1 y1=y
-		x2=x+w y2=y+h-1
-	
-	elseif aim=="up" then
-		x1=x  y1=y-1
-		x2=x+w-1 y2=y-h
-	
-	elseif aim=="down" then 
-		x1=x  y1=y+1
-	 	x2=x+w-1 y2=y+h
+	enx1=plr.x
+	enx2=plr.x+plr.w
+	eny1=plr.y
+	eny2=plr.y+plr.h
+			
+	if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
+	or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
+	or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
+	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+		plr.health -= 1
+		sfx(5)
+		return true
 	end
 	
-	
-	if (plr.x == x1 and plr.y == y1)
-	or (plr.x == x2 and plr.y == y1)
-	or (plr.x == x1 and plr.y == y2)
-	or (plr.x == x2 and plr.y == y2) then
-	 plr.health -= 1
-	 return true
-	else
-		return false
-	end
 end
 
 function enemy_in_range(i)
@@ -374,35 +561,44 @@ function enemy_in_range(i)
 	eny1=i.y
 	eny2=i.y+i.h
 			
-	if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
-	or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
-	or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
-	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+	if (x1<=enx1 and x2>=enx1 and y1<=eny1 and y2>=eny1)
+	or (x1<=enx1 and x2>=enx1 and y1<=eny2 and y2>=eny2)
+	or (x1<=enx2 and x2>=enx2 and y1<=eny1 and y2>=eny1)
+	or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2) then
 		return true
+	else
+		return false
 	end
 	
 end
 
 function	boss_in_range()
-			local x1=0 local y1=0
-			local x2=0 local y2=0
-			local enx1=0 local eny1=0
-			local enx2=0 local eny2=0
+	local x1=0 local y1=0
+	local x2=0 local y2=0
+	local enx1=0 local eny1=0
+	local enx2=0 local eny2=0
 			
-			x1=reticle.x
-			x2=reticle.x+reticle.w
-			y1=reticle.y
-			y2=reticle.y+reticle.h
+	x1=reticle.x
+	x2=reticle.x+reticle.w
+	y1=reticle.y
+	y2=reticle.y+reticle.h
 			
-			enx1=cboss.x
-			enx2=cboss.x+cboss.w
-			eny1=cboss.y
-			eny2=cboss.y+cboss.h
+	enx1=cboss.x
+	enx2=cboss.x+cboss.w
+	enx3=cboss.x+8
+	eny1=cboss.y
+	eny2=cboss.y+cboss.h
+	eny3=cboss.y+8
 			
-			if (x1<enx1 and x2>enx1 and y1<eny1 and y2>eny1)
-			or (x1<enx1 and x2>enx1 and y1<eny2 and y2>eny2)
-			or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
-			or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
+			if (x1<=enx1 and x2>=enx1 and y1<=eny1 and y2>=eny1)
+			or (x1<=enx1 and x2>=enx1 and y1<=eny2 and y2>=eny2)
+			or (x1<=enx1 and x2>=enx1 and y1<=eny3 and y2>=eny3)
+			or (x1<=enx2 and x2>=enx2 and y1<=eny1 and y2>=eny1)
+			or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2)
+			or (x1<=enx2 and x2>=enx2 and y1<=eny3 and y2>=eny3) 
+			or (x1<=enx3 and x2>=enx3 and y1<=eny1 and y2>=eny1)
+			or (x1<=enx3 and x2>=enx3 and y1<=eny2 and y2>=eny2)
+			or (x1<=enx3 and x2>=enx3 and y1<=eny3 and y2>=eny3) then
 	 		return true
 			end
 end
@@ -411,6 +607,23 @@ end
 
 --this randomly generates walls
 function genlevel()
+	if not walls then
+		mset(6, 1, 29)
+		mset(7, 1, 29)
+		mset(8, 1, 29)
+		mset(9, 1, 29)
+		mset(15, 7, 13)
+		mset(15, 8, 13)
+		mset(15, 9, 13)
+		mset(6, 15, 12)
+		mset(7, 15, 12)
+		mset(8, 15, 12)
+		mset(9, 15, 12)
+		mset(0, 7, 14)
+		mset(0, 8, 14)
+		mset(0, 9, 14)
+		walls = t
+	end
   for i=3, 12 do
     for j= 3, 12 do
       if flr(rnd(15)) == 0 and i!=1 and j!= 1 then
@@ -449,6 +662,11 @@ function updatemap()
 	elseif level == 6 then
 		difficulty = difficulty + 1
 		if difficulty >= 4 then
+			--reset shop 
+ 		spawned = f 
+ 		shopping = f 
+ 		mset(7,8,198)
+			mset(8,8,198)
 			make_mboss()
 			spawn_nmreboss()
 		else
@@ -459,11 +677,12 @@ function updatemap()
 		end
 	else
 		genlevel()
-		genenemies()
+		genenemies()		
 	end
 	
 	map(0, 0, 0, 0, 16, 16)
-  
+ 
+ 
  for i in all(tiles) do
    mset(i.x, i.y, i.s)
  end
@@ -471,19 +690,25 @@ function updatemap()
  for j in all(enemy) do
    spr(j.s, j.x, j.y,1,1,fl)
  end
-end
 
-
+end  
 
 -->8
 --player functions--
 
 function plr_update()
 	if(plr.health <= 0) then
+		stop_muzak()
+		start_muzak(4)	
 		state = 4
 	end
 	plr.moving = false
 	plr.lastmove = plr.move
+	
+	grid_x = flr(reticle.x/8)
+	grid_y = flr(reticle.y/8)
+	
+	map_tile = mget(grid_x,grid_y)
 	
 	ranintochest(plr, plr.lastmove)
 	attack_enemy()
@@ -506,7 +731,7 @@ function plr_update()
 		end
 		if plr.x < 0 then
 			updatemap()
-			plr.x = 120
+			plr.x = 112
 		end
 	elseif btn(1) then
 		plr.x += 1
@@ -522,7 +747,7 @@ function plr_update()
 		end
 		if plr.x > 120 then
 			updatemap()
-			plr.x = 8
+			plr.x = 16
 		end
 	elseif btn(2) then
 		plr.y -= 1
@@ -537,7 +762,7 @@ function plr_update()
 		end
 		if plr.y < 8 then
 			updatemap()
-			plr.y = 120
+			plr.y = 112
 		end
 	elseif btn(3) then
 		plr.y += 1
@@ -546,7 +771,7 @@ function plr_update()
 		reticle_aim("down")
 
 		--animate 
-		plr.flp = f
+		plr.flp = false
 		plr_walk()
 		
 		if collide_map(plr,"down",0) then
@@ -554,9 +779,17 @@ function plr_update()
 			end
 		if plr.y > 128 then
 			updatemap()
-			plr.y = 16   
+			plr.y = 16
 
 			end
+	elseif spawned == t and btn(5) then
+		if enemy_in_range(item1) and not item1.b then
+			shopping = t
+			map_tile = item1.tile
+		elseif enemy_in_range(item2) and not item2.b then
+			shopping = t	
+			map_tile = item2.tile
+		end
 	end
 end
 
@@ -566,32 +799,36 @@ function attack_enemy()
 			i.health -= 1
 			if plr.move == "right" then
 				i.x += 6
-				while i.x > 120 or collide_map(i,"right",0) do
+				while collide_map(i,"right",0) do
 					i.x -= 1
 				end
-				plr.sp = 98
-				plr.flp = f
+				if i.x > 120 then
+					i.x = 112
+				end
 			elseif plr.move == "left" then
 				i.x -= 6
-				while i.x < 0 or collide_map(i,"left",0) do
+				while collide_map(i,"left",0) do
 					i.x -= 1
 				end
-				plr.sp = 98
-				plr.flp = t
+				if i.x < 8 then
+					i.x = 8
+				end
 			elseif plr.move == "up" then
 				i.y -= 6
-				while i.y < 0 or collide_map(i,"up",0) do
-					i.y -= 1
-				end		
-				plr.sp=101
-				plr.flp = f 
-			elseif plr.move == "down" then
-				i.y += 6
-				while i.y > 128 or collide_map(i,"down",0) do
+				while collide_map(i,"up",0) do
 					i.y -= 1
 				end
-				plr.sp = 103
-				plr.flp = f 
+				if i.y < 8 then
+					i.y = 8
+				end
+			elseif plr.move == "down" then
+				i.y += 6
+				while collide_map(i,"down",0) do
+					i.y -= 1
+				end
+				if i.y > 128 then
+					i.y = 120
+				end
 			end
 		end
 	end
@@ -608,11 +845,11 @@ function reticle_aim(aim)
 		reticle.x = plr.x-8
 		reticle.y = plr.y
 	elseif aim == "right" then
-		reticle.x = plr.x+8
+		reticle.x = plr.x+7
 		reticle.y = plr.y
 	elseif aim == "up" then
 		reticle.x = plr.x
-		reticle.y = plr.y-8
+		reticle.y = plr.y-7
 	elseif aim == "down" then
 		reticle.x = plr.x
 		reticle.y = plr.y+8
@@ -622,21 +859,22 @@ end
 -->8
 --enemy functions--
 function genenemies()
+		if difficulty == 0 then
+  	sn = 3
+  elseif difficulty == 1 then
+   sn = 4
+  elseif difficulty == 2 then
+   sn = 5
+  elseif difficulty == 3 then
+   sn = 7
+  end
 		for i=3, 12 do
     for j= 3, 12 do
     	for k in all(tiles) do
     		if k.x != i and k.y != j then
-    		  if difficulty == 0 then
-    		    sc = flr(rnd(150))
-    		  elseif difficulty == 1 then
-    		    sc = flr(rnd(100))
-    		  elseif difficulty == 2 then
-    		    sc = flr(rnd(75))
-    		  elseif difficulty == 3 then
-    		    sc = flr(rnd(50))
-    		  end
-    		
-        if sc == 0 and i!=1 and j!= 1 then
+    					sc = flr(rnd(60))
+        	if sc == 0 and sn > 0 and i!=1 and j!= 1 then
+          sn -= 1
           temp = {}
           temp.x = i*8
           temp.y = j*8
@@ -644,26 +882,28 @@ function genenemies()
           temp.h = 8
           temp.moving = false
           temp.d = 0
+          temp.enret = {
+											x=temp.x+8,
+											y=temp.y,
+											w=8,
+											h=8
+										}
           temp.acc = 0.35
 		  						temp.spd = 1
+		  						temp.last = time() - 4
+		  						temp.lastjump = time() - 4
           temp.anim = 0
           temp.move = "down"
           temp.health = 3
           temp.detected = false
-          spawnchance = flr(rnd(8)-1)
+          spawnchance = flr(rnd(7))
           if spawnchance == 0 then
         	   temp.name = "slime"
         	   temp.s = 64
-        	   temp.attack = {"bite"}
           elseif spawnchance == 1 then
-        	   temp.name = "snake"
-        	   temp.s = 66
-        	   temp.attack = {"bite"}
-          elseif spawnchance == 2 then
         	   temp.name = "skull"
         	   temp.s = 90
-        	   temp.attack = {"slam", "bite"}
-          elseif spawnchance == 3 then
+          elseif spawnchance == 2 then
         	   temp.name = "ghost"
         	   temp.s = 69
         	   movechance = flr(rnd(4))
@@ -671,31 +911,27 @@ function genenemies()
         	   	temp.move = "right"
         	   end
         	   temp.count = 15
-        	   temp.attack = {"scare"}
-          elseif spawnchance == 4 then
+          elseif spawnchance == 3 then
         	   temp.name = "shadow"
         	   temp.s = 72
-        	   temp.attack = {"scare", "bite"}
-          elseif spawnchance == 5 then
+          elseif spawnchance == 4 then
         	   temp.name = "eye"
         	   temp.s = 74
-        	   temp.attack = {"slam", "shoot"}
-          elseif spawnchance == 6 then
+          elseif spawnchance == 5 then
         	   temp.name = "blood"
         	   temp.s = 77
-        	   temp.attack = {"bite"}
-          elseif spawnchance == 7 then
+        	   temp.xgoal = temp.x
+        	   temp.ygoal = temp.y
+          elseif spawnchance == 6 then
         	   temp.name = "fire"
         	   temp.s = 86
-        	   temp.attack = {"shoot"}
-        	 elseif spawnchance == 8 then
-        	   temp.name = "spike"
-        	   temp.s = 80
-        	   temp.attack = {"shoot"}
+        	   temp.xgoal = temp.x
+        	   temp.ygoal = temp.y
+        	   temp.spd = 2
           end
-        temp.fl = false
-        add(enemy,temp)
-      	end
+        		temp.fl = false
+        		add(enemy,temp)
+      			end
      	end
      end
     end
@@ -704,6 +940,7 @@ end
 
 function enemy_update()
 	for i in all(enemy) do
+		enret_update(i)
 		an_enemy(i)
 		detect(i)
    		if i.health <= 0 then
@@ -714,24 +951,90 @@ function enemy_update()
 				print("weak")
 			else
 				if i.name == "slime" or
-							i.name == "snake" or
 							i.name == "shadow" or
 							i.name == "eye" or
-							i.name == "blood" or
 							i.name == "skull" then			 
 					x_diff = i.x - plr.x
-					y_diff = i.y - plr.y 
+					y_diff = i.y - plr.y
+					if plr.y > 60 then
+						y_diff += 8
+					else
+						y_diff -= 8
+					end
 					if abs(x_diff) > abs(y_diff) then
-						if x_diff < 8 then
-							enemy_move(i,"right")
-						elseif x_diff > -8 then
-							enemy_move(i,"left")
+						if x_diff < 0 then
+							h=enemy_move(i,"right")
+							if not h then
+								enemy_move(i,"up")
+							end
+						elseif x_diff > 0 then
+							h=enemy_move(i,"left")
+							if not h then
+								enemy_move(i,"down")
+							end
 						end
 					else
-						if y_diff < 8 then
-							enemy_move(i,"down")
-						elseif y_diff > -8 then
-							enemy_move(i,"up")
+						if y_diff < 0 then
+							h=enemy_move(i,"down")
+							if not h then
+								enemy_move(i,"right")
+							end
+						elseif y_diff > 0 then
+							h=enemy_move(i,"up")
+							if not h then
+								enemy_move(i,"left")
+							end
+						end
+					end
+				elseif i.name == "blood" then
+					can_dash(i)
+					if i.x != i.xgoal or i.y != i.ygoal then
+						if i.xgoal > i.x then
+							h=enemy_move(i,"right")
+						elseif i.xgoal < i.x then
+							h=enemy_move(i,"left") 
+						elseif i.ygoal > i.y then
+							h=enemy_move(i,"down")
+						elseif i.ygoal < i.y then
+							h=enemy_move(i,"up")
+						end
+						if not h then
+							i.xgoal = i.x
+							i.ygoal = i.y
+						end
+					else
+						i.spd = 0.2
+						x_diff = i.x - plr.x
+						y_diff = i.y - plr.y
+						if plr.y > 60 then
+							y_diff += 8
+						else
+							y_diff -= 8
+						end
+						if abs(x_diff) > abs(y_diff) then
+							if x_diff < 0 then
+								h=enemy_move(i,"right")
+								if not h then
+									enemy_move(i,"up")
+								end
+							elseif x_diff > 0 then
+								h=enemy_move(i,"left")
+								if not h then
+									enemy_move(i,"down")
+								end
+							end
+						else
+							if y_diff < 0 then
+								h=enemy_move(i,"down")
+								if not h then
+									enemy_move(i,"right")
+								end
+							elseif y_diff > 0 then
+								h=enemy_move(i,"up")
+								if not h then
+									enemy_move(i,"left")
+								end
+							end
 						end
 					end
 				elseif i.name == "ghost" then
@@ -751,41 +1054,26 @@ function enemy_update()
 						i.count = 0
 					end
 				elseif i.name == "fire" then
-					d = flr(rnd(4)+1)
-					if d == 1 then
-						i.x += 32
-						if collide_map(i, "right", 0) then
-							i.x -= 32
-						elseif i.x > 104 then
-							i.x = 104
-						end
-					elseif d == 2 then
-						i.x -= 32
-						if collide_map(i, "left", 0) then
-							i.x += 32
-						elseif i.x < 8 then
-							i.x = 8
-						end
-					elseif d == 3 then
-						i.y += 32
-						if collide_map(i, "down", 0) then
-							i.y -= 32
-						elseif i.y > 112 then
-							i.y = 112
-						end
-					elseif d == 4 then
-						i.y -= 32
-						if collide_map(i, "up", 0) then
-							i.y += 32
-						elseif i.y < 16 then
-							i.y = 16
-						end
+					if time() - i.lastjump > 3 and i.x==i.xgoal and i.y==i.ygoal then 
+						jump(i)
+					end
+					if i.xgoal > i.x then
+						h=enemy_move(i,"right")
+					elseif i.xgoal < i.x then
+						h=enemy_move(i,"left") 
+					elseif i.ygoal > i.y then
+						h=enemy_move(i,"down")
+					elseif i.ygoal < i.y then
+						h=enemy_move(i,"up")
+					end
+					if not h then
+						i.xgoal = i.x
+						i.ygoal = i.y
 					end
 				end
 			end
 		else
 			if i.name == "slime" or
-						i.name == "snake" or
 						i.name == "shadow" then
 					d = flr(rnd(4)+1)
 					if d == 1 then
@@ -822,45 +1110,44 @@ function enemy_update()
 							i.y += 1
 						end
 					end
-				elseif i.name == "spike" then
-					enemy_attack(i)
 				elseif i.name == "fire" then
-					d = flr(rnd(4)+1)
-					if d == 1 then
-						i.x += 32
-						if collide_map(i, "right", 0) then
-							i.x -= 32
-						elseif i.x > 104 then
-							i.x = 104
-						end
-					elseif d == 2 then
-						i.x -= 32
-						if collide_map(i, "left", 0) then
-							i.x += 32
-						elseif i.x < 8 then
-							i.x = 8
-						end
-					elseif d == 3 then
-						i.y += 32
-						if collide_map(i, "down", 0) then
-							i.y -= 32
-						elseif i.y > 112 then
-							i.y = 112
-						end
-					elseif d == 4 then
-						i.y -= 32
-						if collide_map(i, "up", 0) then
-							i.y += 32
-						elseif i.y < 16 then
-							i.x = 16
-						end
+					if time() - i.lastjump > 3 and i.x==i.xgoal and i.y==i.ygoal then 
+						jump(i)
+					end
+					if i.xgoal > i.x then
+						h=enemy_move(i,"right")
+					elseif i.xgoal < i.x then
+						h=enemy_move(i,"left") 
+					elseif i.ygoal > i.y then
+						h=enemy_move(i,"down")
+					elseif i.ygoal < i.y then
+						h=enemy_move(i,"up")
+					end
+					if not h then
+						i.xgoal = i.x
+						i.ygoal = i.y
 					end
 				end
 		end
 	end
 end
 
+function jump(i)
+	i.lastjump = time()
+ d = flr(rnd(4)+1)
+	if d == 1 then
+		i.xgoal += 32
+	elseif d == 2 then
+ 	i.xgoal -= 32
+	elseif d == 3 then
+		i.ygoal += 32
+	elseif d == 4 then
+		i.ygoal -= 32
+	end
+end
+
 function enemy_move(enem,direction)
+	moved = true
 	if direction == "right" then
 		enem.x += enem.spd
 		enem.move = "right"
@@ -868,6 +1155,10 @@ function enemy_move(enem,direction)
 		if collide_map(enem,"right",0) or enem.x+8 == plr.x then
 			enem.x -= enem.spd
 			enemy_move("up")
+			moved = false
+		elseif enem.x > 104 then
+			enem.x = 104
+			moved = false
 		end
 	elseif direction == "left" then
 		enem.x -= enem.spd
@@ -876,6 +1167,10 @@ function enemy_move(enem,direction)
 		if collide_map(enem,"left",0) or enem.x == plr.x+8 then
 			enem.x += enem.spd
 			enemy_move("down")
+			moved = false
+		elseif enem.x < 8 then
+			enem.x = 8
+			moved = false
 		end
 	elseif direction == "up" then
 		enem.y -= enem.spd
@@ -884,6 +1179,10 @@ function enemy_move(enem,direction)
 		if collide_map(enem,"up",0) or enem.y == plr.y+8 then
 			enem.y += enem.spd
 			enemy_move("right")
+			moved = false
+		elseif enem.y < 16 then
+			enem.y = 16
+			moved = false
 		end
 	elseif direction == "down" then
 		enem.y += enem.spd
@@ -892,16 +1191,33 @@ function enemy_move(enem,direction)
 		if collide_map(enem,"down",0) or enem.y+8 == plr.y then
 			enem.y -= enem.spd
 			enemy_move("left")
+			moved = false
+		elseif enem.y > 112 then
+			enem.y = 112
+			moved = false
 		end
+	end
+	return moved
+end
+
+function enret_update(i)
+	if i.move == "left" then
+		i.enret.x = i.x-i.enret.w
+		i.enret.y = i.y
+	elseif i.move == "right" then
+		i.enret.x = i.x+i.w
+		i.enret.y = i.y
+	elseif i.move == "up" then
+		i.enret.x = i.x
+		i.enret.y = i.y-i.enret.h
+	elseif i.move == "down" then
+		i.enret.x = i.x
+		i.enret.y = i.y+i.h
 	end
 end
 
 function detect(enem)
 	if enem.name == "slime" then
-		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
-			enem.detected = true
-		end
-	elseif enem.name == "snake" then
 		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
 			enem.detected = true
 		end
@@ -940,31 +1256,29 @@ end
 
 function enemy_attack(enem)
 		attacked = false
+		if time() - enem.last > 5 then 
 		if enem.name == "slime"
-		or enem.name == "snake"
 		or enem.name == "skull"
 		or enem.name == "ghost"
-		or enem.name == "shadow"
-		or enem.name == "spikes" then
+		or enem.name == "blood"
+		or enem.name == "shadow" then
 			if melee_attack(enem, enem.move) then
+				enem.last = time()
 				attacked = true
 			end
 		elseif enem.name == "fire"
 		or enem.name == "eye" then
 			if can_shoot(enem) then
+				enem.last = time()-3
 				attacked = true
 			end
-		elseif enem.name == "blood" then
-		 if can_dash(enem) then
-		 	attacked = true
-		 end
+		end
 		end
 		return attacked
 	end
-end 
 
 function can_shoot(enem)
-	if plr.y == enem.y then
+	if plr.y >= enem.y and plr.y <= enem.y+enem.h then
 		direction = "left"
 		if plr.x > enem.x then
 			direction = "right"
@@ -972,14 +1286,14 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(106,enem.x, enem.y, direction, 3)
 			return true
-		elseif enem.name == "fire" or enem.name == "death bat" then
-			shoot(84,enem.x, enem.y, direction, 3)
+		elseif enem.name == "fire" then
+			shoot(84,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clock" then
 			shoot(125,enem.x, enem.y, direction, 3)
 			return true
 		end
-	elseif plr.x == enem.x then
+	elseif plr.x >= enem.x and plr.x <= enem.y+enem.w then
 		direction = "up"
 		if plr.y > enem.y then
 			direction = "down"
@@ -987,10 +1301,10 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(107,enem.x, enem.y, direction, 3)
 			return true
-		elseif enem.name == "fire" or enem.name == "death bat" then
-			shoot(123,enem.x, enem.y, direction, 3)
+		elseif enem.name == "fire" then
+			shoot(123,enem.x, enem.y, direction, 2)
 			return true
-		elseif enem.name == "tik tok clock" then
+		elseif enem.name == "tik tok clok" then
 			shoot(124,enem.x, enem.y, direction, 3)
 			return true
 		end
@@ -1017,6 +1331,7 @@ function proj_update()
 		if collide_map(i,"right",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1025,6 +1340,7 @@ function proj_update()
 		if collide_map(i,"left",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1033,6 +1349,7 @@ function proj_update()
 		if collide_map(i,"up",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1041,6 +1358,7 @@ function proj_update()
 		if collide_map(i,"down",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1073,45 +1391,23 @@ function proj_hit(p)
 end
 
 function can_dash(enem)
-	attacked = false
-	enem.spd = 5
  if plr.x/8 == enem.x/8-(enem.x/8)%1 then
  	if plr.y > enem.y then
- 		while plr.y>= enem.y and not collide_map(enem,"dowm",0) do
- 			enem.y += enem.spd
- 			if melee_attack(enem,"down") then
- 				attacked = true
- 			end
- 		end
+ 		enem.ygoal = plr.y-8
  	else
- 		while plr.y<= enem.y and not collide_map(enem,"up",0) do
- 			enem.y -= enem.spd
- 			if melee_attack(enem,"up") then
- 				attacked = true
- 			end
- 		end
+ 		enem.ygoal = plr.y+8
  	end
+ 	enem.spd = 3
  elseif plr.y/8 == enem.y/8-(enem.y/8)%1 then
  	if plr.x > enem.x then
- 		while plr.x>= enem.x and not collide_map(enem,"right",0) do
- 			enem.x += enem.spd
- 			if melee_attack(enem,"right") then
- 				attacked = true
- 			end
- 		end
+ 		enem.xgoal = plr.x-8
  	else
- 		while plr.x<= enem.x and not collide_map(enem,"left",0) do
- 			enem.x -= enem.spd
- 			if melee_attack(enem,"left") then
- 				attacked = true
- 			end
- 		end
+ 		enem.xgoal = plr.x+8
  	end
+ 	enem.xgoal = plr.x
+ 	enem.spd = 3
  end
- enem.spd = 0.2
- return attacked
 end
-
 -->8
 -- animations, dialogue, shop --
 
@@ -1122,16 +1418,14 @@ function plr_walk()
 	d=d-1 
 	if d < 0  then 
 		plr.sp=plr.sp+1 
-		if plr.sp>97 then plr.sp=96 end 
+		if plr.sp != 97 then plr.sp=96 end 
 		d=5
 	end
 end 
 
 -- animation up 
 d2=5 
-
 function plr_up()
- 
 	d2=d2-1 
 	if d2 < 0 then 
 	plr.sp=plr.sp+1
@@ -1140,10 +1434,32 @@ function plr_up()
 	end 
 end 
 
+function an_plr()
+	
+	pflp = f
+	if plr.move == "up" then  
+		psf = 99
+		pnf = 2 
+		psp = 5
+ else
+ 	psf = 96
+ 	pnf = 2
+ 	psp = 5 
+ 	
+ 	if plr.move == "left" then 
+ 		pflip = t 
+ 	end 
+	end
+	
+	anim(plr,psf,pnf,psp,pflp)
+	 
+end 
+
 -- enenmies
 function an_enemy(i)
 	--check which way to flip
 	eflp = f
+	
 	if plr.x > i.x then 
 		eflp = t
 	end 
@@ -1156,12 +1472,6 @@ function an_enemy(i)
 		nf = 2 
 		sp = 8
 		  
-	elseif i.name == "snake" then 
-		func = t 
-		sf = 66
-		nf = 2 
-		sp = 8
-		
 	elseif i.name == "shadow" then 
 		if i.moving == false then 
 			i.s = 73
@@ -1212,6 +1522,11 @@ function an_enemy(i)
 		sf = 86
 		nf = 2 
 		sp = 6
+	elseif i.name == "spike" then
+		func = t 
+		sf = 80
+		nf = 2
+		sp = 9
 	
 	end
 	
@@ -1242,7 +1557,6 @@ end
 	
 -- dialogeeee
 function draw_box()
-	
 	for i=8, 112,8 do
 	 for j=112, 128,8 do 
 			spr(3,i,104)
@@ -1261,7 +1575,6 @@ function draw_box()
 	--side, right 
 	spr(7, 120,112,1,1,t)
 	spr(7, 120,120,1,1,t)
-
 end
 
 function draw_diag()
@@ -1278,24 +1591,10 @@ function draw_diag()
 	end 
 end 
 
---handle shop is used in the update
-function handleshop()
-
-	if not spawned then 
- 	spawnshop() 
- end 
- 
- if shopping then 
-		use_menu()
-	else 
-		plr_update()
-	end 
-	
-end
 
 --function to spawn our shop 
 function spawnshop()
-
+	
 	spawned = t
 	
 	dis_diag = t
@@ -1304,41 +1603,68 @@ function spawnshop()
 
 	draw_diag()
 
-	item1 = buy[flr(rnd(3)) + 1]
-	item2 = buy[flr(rnd(3)) + 1] 
+	item1.sp = buy[flr(rnd(3)) + 1]
+	item2.sp = buy[flr(rnd(3)) + 1] 
 	
-	mset(7,8,item1)
-	mset(8,8,item2)
+	item1.x = 56
+	item1.y = 64
+	item1.tile = mget(item1.x/8,item1.y/8)
+	item1.w = 8
+	item1.h = 8
+	
+	item2.x = 64
+	item2.y = 64
+	item2.tile = mget(item2.x/8,item2.y/8)
+	item2.w = 8
+	item2.h = 8
+	
+	item1.b = f 
+	item2.b = f 
+	
+	
+	mset(7,8,item1.sp)
+	mset(8,8,item2.sp)
 	
 	
 end
 
 --draws shop
 function drawshop()
-	--spr
-	spr(152,48,56,4,3)
-	--hamster
-	spr(116,56,56,2,1)
-	spr(118,60,51)
 	
-	--two items 
-	spr(item1,56,64)
-	spr(item2,64,64)
-	
-	print(map_tile)
-
+	if spawned then --spr
+		spr(152,48,56,4,3)
+		--hamster
+		spr(116,56,56,2,1)
+		spr(118,60,51)
+		
+		--two items 
+		if not  item1.b then 
+			spr(item1.sp,56,64)
+		end 
+		
+		if not item2.b then 
+			spr(item2.sp,64,64)
+		end 
+		
+		--print(map_tile, 64,120,10)
+	end 
 end  
 
 --info shows the items info
 function i_info(it)
-	
+	if it == item1.tile then 
+			thissp = item1.sp
+		end 
+		if it == item2.tile then 
+			thissp = item2.sp
+		end 
 	diag = "this is a"
 	
-	if it == 51 or item == 50 then 
+	if thissp == 51 or thissp == 50 then 
 		diag = diag.." heart.\nit willraise your health by one."
-	elseif it == 36 then
+	elseif thissp == 36 then
 		diag = diag.." key.\nyou can use these to open chests."
-	elseif it == 16 then 
+	elseif thissp == 16 then 
 		diag = diag.." potion.\nthis will restore your health."
 	end 
 	
@@ -1349,10 +1675,37 @@ end
 --wip
 --this buys the item and applies effect
 function buyitem(it)
-	diag = "thanks for shopping!"
-	dis_diag = t
 	
-	shopping = f   
+	if plr.coins > 5 then 
+	
+		diag = "thanks for shopping!"
+		dis_diag = t
+		
+		if it == item1.tile then 
+			item1.b = t 
+			thissp = item1.sp
+			mset(item1.x/8,item1.y/8,0)
+		end 
+		if it == item2.tile then 
+			item2.b = t
+			thissp = item2.sp 
+			mset(item2.x/8,item2.y/8,0)
+		end 
+		
+		if thissp == 51 or thissp == 50 then 
+			plr.maxhp += 1
+		elseif thissp == 36 then
+			plr.keys += 1
+		elseif thissp == 16 then 
+			plr.health = plr.maxhp		
+		end
+		plr.coins-= 5
+	else 
+		diag = "you don't have enough money!"
+		dis_diag = t
+	end 
+	
+	shopping = f 
 end 
 
 --draws the would u like to buy
@@ -1404,6 +1757,7 @@ function selection_check()
 		end 
 	end 
 end  
+	 
 -->8
 -- boss code 
 
@@ -1417,9 +1771,13 @@ newboss = function (name,hp)
 	hp = hp,
 	spawned = false,
 	sprts = {},
+	enret = {},
 	flp = false,
+	last = time() - 10,
+	lastjump = time()-10,
 	attack = {"bite"},
 	move = "down",
+	spd = 1,
 	x = 60,
 	y = 64,
 	w = 16,
@@ -1437,20 +1795,32 @@ function make_mboss()
 	grim = newboss("grim reaper", 4)
 	grim.sprts = {92,94}
 	grim.sp = 94
-	scythe.x = grim.x + 16
+	scythe.x = grim.x - 16
 	scythe.y = grim.y 
+	scythe.enret.x = scythe.x+8
+	scythe.enret.y = scythe.y
 	
 	fish = newboss("rotting fish", 4)
 	fish.sprts = {160,162}
-	fish.sp = 160 
-	 
-	bat = newboss("death bat",5) 
-	bat.sprts = {140,142,172,173}
-	bat.sp = 140 
+	fish.sp = 160
+	fish.spd = 0.5
+	fish.enret = {
+		x=fish.x+8,
+		y=fish.y,
+		w=8,
+		h=8
+	}  
 	
 	nmre = newboss("mr.nightmare",7)
 	nmre.sprts = {132} 
 	nmre.sp = 132
+	nmre.spd = 0.2
+	nmre.enret = {
+		x=nmre.x+8,
+		y=nmre.y,
+		w=8,
+		h=8
+	} 
 	nmre.w = 32
 	nmre.h = 32 
 	
@@ -1460,14 +1830,17 @@ end
 
 --function to spawn a boss 
 function spawn_mboss() 
+
+	stop_muzak()
+	start_muzak(2)
 	
 	--current boss 
-	rndm = flr(rnd(4) + 1)
+	rndm = flr(rnd(3) + 1)
 	
 	--pick a boss we have not spawned 
 	cboss = mbosses[rndm] 
 	while cboss.spawn == false do 
-		 cboss = mbosses[flr(rnd(4)+1)]
+		 cboss = mbosses[flr(rnd(3)+1)]
 			cboss.spawn = true 
 	end 
 end
@@ -1538,28 +1911,29 @@ function draweye()
 	spr(eye, cboss.x+6, cboss.y+8, 2,1,efl,false)  	
 	
 end  
- 
+
 function boss_update()
 	--an_enemy(cboss)
 		if boss_attack() then
 				print("weak")
 		else 
-			if cboss.name == "rotting fish" then
+			if cboss.name == "rotting fish" or cboss.name == "mr.nightmare" then
 				x_diff = cboss.x - plr.x
 				y_diff = cboss.y - plr.y 
 				if abs(x_diff) > abs(y_diff) then
 					if x_diff < 8 then
-						boss_move("right")
+						boss_move("right",1)
 					elseif x_diff > -8 then
-						boss_move("left")
+						boss_move("left",1)
 					end
 				else
 					if y_diff < 8 then
-						boss_move("down")
+						boss_move("down",1)
 					elseif y_diff > -8 then
-						boss_move("up")
+						boss_move("up",1)
 					end
 				end
+				enret_update(cboss)
 			elseif cboss.name == "grim reaper" then
 				x_diff = scythe.x - plr.x
 				y_diff = scythe.y - plr.y 
@@ -1576,72 +1950,109 @@ function boss_update()
 						enemy_move(scythe,"up")
 					end
 				end
+				enret_update(scythe)
 				x_diff = cboss.x - plr.x
 				y_diff = cboss.y - plr.y 
 				if abs(x_diff) > abs(y_diff) then
 					if x_diff < 16 then
-						boss_move("right")
+						boss_move("right",1)
 					elseif x_diff > -16  then
-						boss_move("left")
+						boss_move("left",1)
 					end
 				else
 					if y_diff < 16 then
-						boss_move("down")
+						boss_move("down",1)
 					elseif y_diff > -16 then
-						boss_move("up")
+						boss_move("up",1)
+					end
+				end
+			elseif cboss.name == "tik tok clok" then
+				x_diff = cboss.x - plr.x
+				y_diff = cboss.y - plr.y 
+				if abs(x_diff) > abs(y_diff) then
+					if x_diff < 32 then
+						boss_move("right",1)
+					elseif x_diff > -32  then
+						boss_move("left",1)
+					end
+				else
+					if y_diff < 32 then
+						boss_move("down",1)
+					elseif y_diff > -32 then
+						boss_move("up",1)
 					end
 				end
 			end
 		end
 end
 
-function boss_move(direction)
+function boss_move(direction,errors)
+	if errors == 4 then
+		return false
+	end
 	if direction == "right" then
-		cboss.x += 1
+		cboss.x += cboss.spd
 		cboss.move = "right"
 		if collide_map(cboss,"right",0) or cboss.x+cboss.w == plr.x or cboss.x > 104 then
-			cboss.x -= 1
-		 boss_move("up")
-			end
+			cboss.x -= cboss.spd
+			errors += 1
+		 boss_move("up",errors)
+		end
 	elseif direction == "left" then
-			cboss.x -= 1
+			cboss.x -= cboss.spd
 			cboss.move = "left"
 			if collide_map(cboss,"left",0)or cboss.x == plr.x+8 or cboss.x < 24 then
-				cboss.x += 1
-				boss_move("down")
-				end
+				cboss.x += cboss.spd
+				errors += 1
+				boss_move("down",errors)
+			end
 	elseif direction == "up" then
-			cboss.y -= 1
+			cboss.y -= cboss.spd
 			cboss.move = "up"
 			if collide_map(cboss,"up",0) or cboss.y == plr.y+8or cboss.y < 24 then
-				cboss.y += 1
-				boss_move("right")
-				end
+				cboss.y += cboss.spd
+				errors += 1
+				boss_move("right",errors)
+			end
 	elseif direction == "down" then
-			cboss.y += 1
+			cboss.y += cboss.spd
 			cboss.move = "down"
 			if collide_map(cboss,"down",0) or cboss.y+cboss.h == plr.y or cboss.y > 104 then
-				cboss.y -= 1
-				boss_move("left")
-				end
+				cboss.y -= cboss.spd
+				errors += 1
+				boss_move("left",errors)
+			end
 	end
 end
 
 function boss_attack()
 		attacked = false
+		if time() - cboss.last > 3 then
 		if cboss.name == "rotting fish" then
 			if melee_attack(cboss,cboss.move) then
+				cboss.last = time()
 				attacked = true
 			end
-		elseif cboss.name == "tik tok clock"
-		or cboss.name == "death bat" then
+		elseif cboss.name == "tik tok clok" then
 			if can_shoot(cboss) then
+				cboss.last = time()-1
 				attacked = true
 			end
 		elseif cboss.name == "grim reaper" then
 		 if melee_attack(scythe,scythe.move) then
+		 	cboss.last = time()
 		 	attacked = true
 		 end
+		elseif cboss.name == "mr.nightmare" then
+			if melee_attack(cboss,cboss.move) then
+				cboss.last = time()+5
+				plr.health -= 2
+				attacked = true
+			elseif can_shoot(cboss) then
+				cboss.last = time()+5
+				attacked = true
+			end
+		end
 		end
 		return attacked
 end
@@ -1702,14 +2113,14 @@ __gfx__
 fddddd3334ffff334f4444443dddddf339999343fdddd333e888883334ddddf3334999aa4a999033333333333333333333333333333333333333333301103333
 43ddddf33fdddd333ddddf33fdddd3433dddddf33dddd333238888e334833833333449999990033333333333333c333333333333333333333333333333103313
 3383383334ddddf33833833338338333fdddd343383383333323323334333333333330000000333333333333333c333333333333333333333333333313033333
-3333333333333333333f333333330003330999000099903333333333336663363333333333333333333333333939a93300000000000000000000000000000000
-333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333333000333339a7a9300000000000000000000000000000000
-333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333330808033339a7a9300000000000000000000000000000000
-3336333333342333333e333333655043330f70799079f033311111336363336336336333336663330d8086033389a98300000000000000000000000000000000
-333633333342333333323333365033433307700770099090311111336333336333663333333666330d8886033338983300000000000000000000000000000000
-339993333423333333323333350333433307777777779990310000333633363333333633333333330dd8dd033333833900000000000000000000000000000000
-333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333330ddd033a333833300000000000000000000000000000000
-333c3333333333333333333333333343330000000000003333333333333333333333333333333333330003333333333300000000000000000000000000000000
+3333333333333333333f333333330003330999000099903333333333336663363333333333333333333333333939a93333333333333333333333333300000000
+333633333333342333f7e3333330665330ff99999999ff033333333336333633336633333333333333000333339a7a9333393333333333333399993300000000
+333633333333423333eee3333366555330ff79999999ff033311133363663363366363333333333330808033339a7a93333a3333333333a33999ff9300000000
+3336333333342333333e333333655043330f70799079f033311111336363336336336333336663330d8086033389a983333a33333339aaaa3f0ff0f300000000
+333633333342333333323333365033433307700770099090311111336333336333663333333666330d88860333389833333a3333333333a333cffc3300000000
+339993333423333333323333350333433307777777779990310000333633363333333633333333330dd8dd0333338339333a33333333333333dddd3300000000
+333c333333333333333233333033334330ff7777777ff9033733333333666363333333333333333330ddd033a333833333aaa333333333333fddddf300000000
+333c33333333333333333333333333433300000000000033333333333333333333333333333333333300033333333333333a3333333333333383383300000000
 33333033033333333333333333333333333333333333333333333333333333333330000000003333333300000000333333333333338333333333333333833333
 3333300300333333333333333333333333333333333333333333333333333333330dd010dddd00333300dd01110d003333333333938333333333338333333333
 333330030030333333333333333333333333333333000000000333333333333330dd01110ddddd0330dddd01110ddd0333333333998333333333333333333333
@@ -1742,30 +2153,30 @@ d0000000111333333ddd0d3d033333333333000ddddd01110ddddd00003333330042444422222222
 33300000033003333333333011033333333333d1100111d111ddddd1133333330444444400000000000000004444444033003300330300330000000000000000
 333333333333333333333333003333333333331111dddd3311333333333333330440000000000000000000000000044033033333333330330000000000000000
 33333333333333333333333333333333333331111333333333333333333333330000000000000000000000000000000033333333333333330000000000000000
-00000000111111111111111111111111200020002222200000000000022222220000000000000000000000000000000000000000000000000000000000000000
-00000000111111111111111111111111002000202200000000000000000002220000000000000000000000000000000000000000000000000000000000000000
-00000000111000000000000000000111020022002000000000000000000000220000000000000000000000000000000000000000000000000000000000000000
-00000000110120202022022002001011000200202000000000000000000000220000000000000000000000000000000000000000000000000000000000000000
-00000000110010020000002000012011200200002000000000000000000000220000000000000000000000000000000000000000000000000000000000000000
-00000000110001000022000220100011002002000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110200100220022001002011000020000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110002010000000010020011220020020000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110002001111111111111111000020110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110200201100000000000000020020110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110000201000202020002020020000112000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110020001020002020200020000200110000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110020001020200022202000000200112000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110000201020202220202022020000112000000000000000000000020000000000000000000000000000000000000000000000000000000000000000
-00000000110200201022200220222002020020112200000000000000000000220000000000000000000000000000000000000000000000000000000000000000
-00000000110200001020220202202202002000112222220000000000000022220000000000000000000000000000000000000000000000000000000000000000
-00000000110020011002200220002020102000112022000111111111000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110200101022020220200020010020110202020100000011000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110001021000020022202000001000110200020122222001000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110210001022200220202022200100110202000102000001000000000000000000000000000000000000000000000000000000000000000000000000
-00000000110100201000202020222002020210112002220122220201000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111000001020002002202202000001110020000120000001000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111111020202000202020111111112020220100202201000000000000000000000000000000000000000000000000000000000000000000000000
-00000000111111111000220222202000111111112002200122200001000000000000000000000000000000000000000000000000000000000000000000000000
+00000000111111111111111111111111200020002222200000000000022222222220027702227770002227770220227022277770000000000000000030000333
+00000000111111111111111111111111002000202200000000000000000002220220002700222200022222202220022722222227000000000000000001111033
+00000000111000000000000000000111020022002000000000000000000000220227002700022000222000002200002722022202000000000000000011111033
+00000000110120202022022002001011000200202000000000000000000000222222702700022000220022702227702720022000000000000000000010111103
+00000000110010020000002000012011200200002000000000000000000000222202222700022000220002272222222200022000000000000000000010011110
+00000000110001000022000220100011002002000000000000000000000000022200222700227000222700272200222200022000000000000000000070711110
+00000000110200100220022001002011000020000000000000000000000000022270022700222700022272222270022200227000000000000000000000011110
+00000000110002010000000010020011220020020000000000000000000000022227002202222270002222020220222002222700000000000000000001111110
+00000000110002001111111111111111000020110000000000000000000000000222007000277770222777000222277027700000000000000000000011111103
+00000000110200201100000000000000020020110000000000000000000000002220002700022227222222702222222722700000000000000000000011111103
+00000000110000201000202020002020020000112000000000000000000000002222022700022227022000222200022202200000000000000000000011111113
+00000000110020001020002020200020000200110000000000000000000000022222222700222022022000222227000222000000000000000000000011111113
+00000000110020001020200022202000000200112000000000000000000000022202222202270022027002200222700000000000000000000000000011103113
+00000000110000201020202220202022020000112000000000000000000000022200202202227222022722002220007700000000000000000000000001103333
+00000000110200201022200220222002020020112200000000000000000000222270002222222222222022702222222700000000000000000000000033103313
+00000000110200001020220202202202002000112222220000000000000022222227022222000222222002270222222000000000000000000000000013033333
+00000000110020011002200220002020102000112022000111111111000000002277770000000000277000000227700002222770000000000000000000000000
+00000000110200101022020220200020010020110202020100000011000000002222227000000000227000000222200022222227000000000000000000000000
+00000000110001021000020022202000001000110200020122222001000000000220222200000000022000000022000002220022000000000000000000000000
+00000000110210001022200220202022200100110202000102000001000000000220022200000000220000000022000000222002000000000000000000000000
+00000000110100201000202020222002020210112002220122220201000000000270002200000000000000000022700070022700000000000000000000000000
+00000000111000001020002002202202000001110020000120000001000000002227022200000000000000000000000027002270000000000000000000000000
+00000000111111111020202000202020111111112020220100202201000000002222722200000000000000000027700022222227000000000000000000000000
+00000000111111111000220222202000111111112002200122200001000000002222222000000000000000000022000002222220000000000000000000000000
 00000000000000000000000000000000202202201000022220220201000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000220020200000000200222021022020020022201000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000002000220000000000220202021000000222020201000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1775,34 +2186,34 @@ d0000000111333333ddd0d3d033333333333000ddddd01110ddddd00003333330042444422222222
 00000000000000001111111100000000000000001100000000000011000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000001111111100000000111111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000000100000000000000010101010100030100000000000000000000010101000000000000000000000000000000010000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010101000000000000000000000000010100010000000000000000000000000001000000000000000000000000000000010000000000000000000000000000
+0000000100000000000000010101010105030100000000000000000000010101000000000500000000000000000000010000050500000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010101000000000000010100000000010100010000000000000101000000000001000000000000000000000000000000010000000000000000000000000000
 __map__
 0000000000000000000000090000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-1f1d1e1e1d1d2d3d3d2d1d1e1e1d1d0f00c1c2c2c2c2c3e3e3e3e3c1c2c2c2c2c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+1f1d1e1e1d1d1d1d1d1d1d1e1e1d1d0f00c1c2c2c2c2c3cacacacac1c2c2c2c2c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d3d3d2d2d2d2d2d2d0d00d1d2d3d3d3d3e3e3e3e3d3d3d3d3e6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0b2d2d2d3d3d3d3d3d2d2d3d3d3d2d0d00d1e2e3c5c6e3e3e3e3e3e3e3e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d3d3d3d2e3d2d3d3d3d3d2d0d00d1e2e3d5d6e3c4c4c4c4c4c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d2d2d2d2d2d2d2d0d00d1e2c4c4e3e3c4c4c4c4c4c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d3d3d3d3d3d3d2d2d2d2d2d2d2d0d00e1e2c4c4c4e3e3e3e3e3e3e3e3e3e5e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d3d3d3d3d2d2d2d2d2d2d2d2d00e3e3e3c4c4e3e3c5c6c7e3e3e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d3d2d2d2d2d2d2d3d3d3d2d2d00e3e3c4c4e3e3e3c6c6c6e3e3e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2d3d3d3d2d2d2d2d2d2d2d3d3d3d2d2d00e3e3e3e3e3e3e3c6c6d7e3c4e3e3e3e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e3d3d3d3d3d3d3d2d2d2d2d2d2d2d0d00dae3e3c4c4e3e3c5c6c7e3e3e3e3e3db0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e3d3d3d3d2d2d2d2d2d2d3d3d3d2d0d00dae3c4c4e3e3e3c6c6c6e3e3e3e3e3db0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0e3d3d3d2d2d2d2d2d2d2d3d3d3d2d0d00dae3e3e3e3e3e3c6c6d7e3c4e3e3e3db0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d3d3d3d3d2d2d3d3d3d2d0d00c1e2e3e3e3e3e3d5d7c4c4c4e3e3e5c30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d3d2d2d2d3d3d2d0d00d1e2e3e3e3e3e3e3c4c4c4c7e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0e2d2d2d2d2d2d2d2d2d2d2d3d3d2d0d00d1e2e3c5e3e3c4c4c4c4c4d7e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0b2d2d2d2d3d3d3d2d2d2d2d2d2d2d0d00d1e2e3d5c7c4e3c4c4e3e3c4e3e3e5d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0b2d2d2d2d3d3d2d2d2d2d2d2d2d2d0d00d1f5f4f4f4f4e3e3e3e3f4f4f4f4f6d40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-2f0c0c0c0c0c3d3d3d3d0c0c0c0c0c3f00e1f2f2f2f2e4e3e3e3e3e1f2f2f2f2e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+2f0c0c0c0c0c0c0c0c0c0c0c0c0c0c3f00e1f2f2f2f2e4cbcbcbcbe1f2f2f2f2e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 00010000082000b2000b2001e000240002d000310003f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000002475015550195501a55020550175501455024700197001a900167001c000137000000031000000001870000000197000000006700000000b70000000157001180013700000001b700000001270000000
 0116001e0e0520f052055520f0520f052065520d0520d052065520c0520c052065520905209052045520905209052035520805208052025520905209052025520d0520d052045520d0520d052055520d00200000
 011000001e05520055220550010019f0014f000ef000bf000af0009f0007f0007f0007f000ad0007f0008d0007d0007d0009c0007d0007d00000001ec001ac000000016c0012c0011c0010c00000000000000000
 011000002e710317101a0020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-011000000625306253062530000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000000625000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 01100000376511425214252256510f2520f252136510325203252326000b2000b2000d2000f200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0110000025953299530d8001080009800000003880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0010000025913299130d8001080009800000003880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010a000023f5226f5229f520000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000
 001200003f372000000b7003f372097000b7003f372000003f3723f3003f3723c3003f3723b3523f3523a3523f352363522b3521632203322023120000000000000000000000c00000000000000c000000021300
 0010000000a1000a700167005a7001a400062001a2002670026700167001660006500064001630016300063000630016300003000030016200001000010006100061000610000000000000000000000000000000
@@ -1821,7 +2232,7 @@ __sfx__
 __music__
 00 12135444
 03 11155644
-00 024f5044
+03 024f5044
 00 41424344
 00 41424344
 00 41424344
