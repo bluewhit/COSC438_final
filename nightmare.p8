@@ -211,7 +211,8 @@ end
 
 --this draws the base map, player, and the generated wall tiles
 function _draw()
-  
+ 
+ 
  if state==0 then
 		draw_intro()
  elseif state==1 then
@@ -427,46 +428,37 @@ function ranintochest(obj, aim)
 			if btnp(5) then
 				mset(x1, y1, 18)
 				plr.coins += 10
-				plr.keys -= 1
-				
+				plr.keys -= 1 
 				diag = "found 10 coins!"
 				dis_diag = t
-				d_tick = 50
 			end
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
 				mset(x1, y2, 18)
 				plr.coins += 10
 				plr.keys -= 1
-				
 				diag = "found 10 coins!"
 				dis_diag = t
-				d_tick = 50
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
 				mset(x2, y1, 18)
 				plr.coins += 10
 				plr.keys -= 1
-				
 				diag = "found 10 coins!"
 				dis_diag = t
-				d_tick = 50
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
 				mset(x2, y2, 18)
 				plr.coins += 10
 				plr.keys -= 1
-				
 				diag = "found 10 coins!"
-				dis_diag = t
-				d_tick = 50
+	  	dis_diag = t
 			end
-		end	
+		end 	
 	end
 end
-
 
 function melee_attack(obj,aim)
 	local x1=0 local y1=0
@@ -719,13 +711,10 @@ function plr_update()
 			plr.y = 16
 
 			end
-	elseif spawned == t and btnp(5) then
+	elseif spawned == t and btn(5) then
 		if enemy_in_range(item1) and not item1.b then
 			shopping = t
 			map_tile = mget(item1.x,item1.y)
-		elseif enemy_in_range(item2) and not item2.b then
-			shopping = t	
-			map_tile = mget(item2.x,item2.y)
 		end
 	end
 end
@@ -1340,9 +1329,15 @@ function an_plr()
 	
 	pflp = f
 	if plr.move == "up" then  
-		psf,pnf,psp,patk = 99,2,5,101
+		psf = 99
+		pnf = 2 
+		psp = 5
+		patk = 101
 	else
-	 psf,pnf,psp,patk = 96,2,5,98
+	 psf = 96
+	 pnf = 2
+	 psp = 5 
+	 patk = 98
 	 if plr.move == "left" then 
 	 	pflp = t 
 	 end 
@@ -1362,14 +1357,18 @@ end
 -- enenmies
 function an_enemy(i)
 	--check which way to flip
-	eflp,func = f,f
+	eflp = f
+	func = f 
 	
 	if plr.x > i.x then 
 		eflp = t
 	end 
 	
 	if i.name == "slime" then
-		func,sf,nf,sp = t,64,2,8
+		func = t 
+		sf = 64
+		nf = 2 
+		sp = 8
 		  
 	elseif i.name == "shadow" then 
 		if not i.moving then 
@@ -1400,7 +1399,10 @@ function an_enemy(i)
 		if not i.moving then 
 			i.s = 71
 		else 
-			func,sf,nf,sp = t,69,2,8  
+			func = t 
+			sf = 69
+			nf = 2 
+			sp = 8 
 		end
 		
 	elseif i.name == "blood" then
@@ -1414,9 +1416,16 @@ function an_enemy(i)
 			i.s = 79
 		end  
 	elseif i.name == "fire" then 
-		func,sf,nf,sp = t,86,2,6 
+		func = t 
+		sf = 86
+		nf = 2 
+		sp = 6
 	elseif i.name == "spike" then
-		func,sf,nf,sp = t,80,2,9 
+		func = t 
+		sf = 80
+		nf = 2
+		sp = 9
+	
 	end
 	
 	-- if we use the function
@@ -1481,7 +1490,9 @@ function draw_diag()
 		print(sub(diag,1,flr(d_tick+6/3)),8,107)
 		d_tick+=1
 		if d_tick > 90 then
-			dis_diag,diag,d_tick = f,"",0
+			dis_diag = false
+			diag = ""
+			d_tick = 0
 		end
 	end 
 end 
@@ -1492,34 +1503,23 @@ function spawnshop()
 	
 	spawned = t
 	
-	dis_diag = t
 	diag = "do you want to buy something?"
+	dis_diag = t
 		
 	plr.x = 64 
 	plr.y = 80 
-	draw_diag()
 
 	item1.sp = buy[flr(rnd(3)) + 1]
-	item2.sp = buy[flr(rnd(3)) + 1] 
 	
-	item1.x = 52
+	item1.x = 60
 	item1.y = 64
 	item1.tile = mget(item1.x,item1.y)
 	item1.w = 8
 	item1.h = 8
 	
-	item2.x = 68
-	item2.y = 64
-	item2.tile = mget(item2.x,item2.y)
-	item2.w = 8
-	item2.h = 8
+	item1.b = f  
 	
-	item1.b = f 
-	item2.b = f 
-	
-	
-	mset(6.5,8,item1.sp)
-	mset(8.5,8,item2.sp)
+	mset(7.5,8,item1.sp)
 	
 	
 end
@@ -1538,10 +1538,6 @@ function drawshop()
 			spr(item1.sp,56,64)
 		end 
 		
-		if not item2.b then 
-			spr(item2.sp,64,64)
-		end 
-		
 		--print(map_tile, 64,120,10)
 	end 
 end  
@@ -1551,9 +1547,8 @@ function i_info(it)
 
 	if it == item1.tile then 
 			thissp = item1.sp
-	elseif it == item2.tile then 
-			thissp = item2.sp
-		end 
+	end
+	 
 	diag = "this is a"
 	
 	if thissp == 51 or thissp == 50 then 
@@ -1583,14 +1578,7 @@ function buyitem(it)
 			mset(item1.x,item1.y,0)
 			plr.coins-= 5
 			itemcheck(thissp)
-			
-		elseif it == item2.tile then 
-			item2.b = t
-			thissp = item2.sp 
-			mset(item2.x,item2.y,0)
-			plr.coins-= 5
-			itemcheck(thissp)
-		end 
+		end
 
 	else 
 		diag = "you don't have enough money!"
@@ -1673,6 +1661,7 @@ newboss = function (name,hp)
 	name = name, 
 	hp = hp,
 	spawned = false,
+	sprts = {},
 	enret = {},
 	flp = false,
 	last = time() - 10,
@@ -1691,9 +1680,11 @@ end
 --function to make mini bosses and to set their sprites 
 function make_mboss()
 	clock = newboss("tik tok clok", 3) 
+	clock.sprts = {88} 
 	clock.sp = 88
 	
 	grim = newboss("grim reaper", 4)
+	grim.sprts = {92,94}
 	grim.sp = 94
 	scythe.x = grim.x - 16
 	scythe.y = grim.y 
@@ -1701,6 +1692,7 @@ function make_mboss()
 	scythe.enret.y = scythe.y
 	
 	fish = newboss("rotting fish", 4)
+	fish.sprts = {160,162}
 	fish.sp = 160
 	fish.spd = 0.5
 	fish.enret = {
@@ -1711,6 +1703,7 @@ function make_mboss()
 	}  
 	
 	nmre = newboss("mr.nightmare",7)
+	nmre.sprts = {132} 
 	nmre.sp = 132
 	nmre.spd = 0.2
 	nmre.enret = {
@@ -1730,9 +1723,9 @@ end
 function spawn_mboss()  
 	
 	--pick a boss we have not spawned 
-	cboss = mbosses[flr(rnd(4)+1)] 
+	cboss = mbosses[flr(rnd(3)+1)] 
 	while not cboss.spawned do 
-		 cboss = mbosses[flr(rnd(4)+1)]
+		 cboss = mbosses[flr(rnd(3)+1)]
 			cboss.spawned = true 
 	end 
 end
@@ -1746,11 +1739,7 @@ end
 function draw_boss()
 
 	if cboss.name != "mr.nightmare" then
-		if cboss.name == "rotting fish" then
-			ani_boss()
-		else
-			spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
-			end
+		ani_boss()
 	else 
 		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
 		draweye()
