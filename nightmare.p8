@@ -432,61 +432,19 @@ function ranintochest(obj, aim)
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
 				mset(x1, y2, 18)
-<<<<<<< Updated upstream
-				
-				if flr(rnd(10)) == 1 then 
-					diag = "found a potion.\ni feel a bit better!"
-					dis_diag = t
-					plr.health = plr.maxhp
-				else
-					plr.coins += 10
-					plr.keys -= 1
-					diag = "found 10 coins!"
-					dis_diag = t
-				end 
-=======
 				chestitem()
->>>>>>> Stashed changes
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
 				mset(x2, y1, 18)
-<<<<<<< Updated upstream
-				if flr(rnd(10)) == 1 then 
-					diag = "found a potion.\ni feel a bit better!"
-					dis_diag = t
-					plr.health = plr.maxhp
-				else
-					plr.coins += 10
-					plr.keys -= 1
-					diag = "found 10 coins!"
-					dis_diag = t
-				end 
-=======
 				chestitem()
->>>>>>> Stashed changes
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
 				mset(x2, y2, 18)
-<<<<<<< Updated upstream
-				if flr(rnd(10)) == 1 then 
-					diag = "found a potion.\ni feel a bit better!"
-					dis_diag = t
-					plr.health = plr.maxhp
-				else
-					plr.coins += 10
-					plr.keys -= 1
-					diag = "found 10 coins!"
-					dis_diag = t
-				end 
-			end
-		end 	
-=======
 				chestitem()
 			end 
 		end	
->>>>>>> Stashed changes
 	end
 end
 
@@ -1785,18 +1743,13 @@ end
 --draw the bosses 
 function draw_boss()
 
-<<<<<<< Updated upstream
-	if cboss.name != "mr.nightmare" then
-		ani_boss()
-=======
 	if cboss.name == "rotting fish" then
 		ani_boss()
-	elseif 
-		spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
->>>>>>> Stashed changes
-	else 
+	elseif cboss.name == "mr. nightmare" then 
 		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
 		draweye()
+	else 
+		spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
 	end
 end 
 
