@@ -10,8 +10,9 @@ function _init()
 	display = f
 	counter = 0
 	
+	map_tile=mget(0,0)
+	
 	item1={}
-	item2={}
 	
 	state = 0
 	step = 0
@@ -46,8 +47,8 @@ function _init()
 	spawned = f
 	select = 1
 
-	level = 1
-	difficulty = 0
+	level = 4
+	difficulty = 3
 	tiles = {}
 	enemy = {}
 	mbosses = {}
@@ -77,6 +78,16 @@ function _init()
 	
 	music(1)
 end
+
+function start_muzak(n)
+	if not playing then
+		music(n) playing=true
+		end
+end
+
+function stop_muzak()
+	music(-1) playing=false
+end
 -->8
 --update and draw--
 
@@ -84,10 +95,10 @@ end
 function _update()
 
  if state == 0 then
-   if btnp(4) then
+   if btnp(5) then
      step += 1
    end
-   if btnp(5) then
+   if btnp(4) then
      step -= 1
    end
    if step >= 6 then
@@ -164,6 +175,9 @@ function _update()
  	mset(26,15,203)
  else
  	if difficulty == 4 then
+ 		stop_muzak()
+ 	 start_muzak(3)
+ 	 step = 0
 			state = 3
 		end
  	mset(23,1,227)
@@ -183,33 +197,36 @@ function _update()
  	
  	--shop spawn 
  	if not spawned then 
+ 		stop_muzak()
  		spawnshop() 
+ 		start_muzak(1)
 	 end
 	 
  end
  proj_update()
  elseif state == 3 then
- 	if btnp(4) then
-   	for i in all(tiles) do
-					mset(i.x, i.y, 45)
-				end
-    _init()
-    reboot()
+ 	if btnp(5) then
+     step += 1
+    end
+    if btnp(4) then
+     step -= 1
+    end
+    if step >= 6 then
+     state = 99
+    end
+   if step < 0 then
+     step = 0
    end
- elseif state == 4 then
- 	if btnp(4) then
-   	for i in all(tiles) do
-					mset(i.x, i.y, 45)
-				end
-    _init()
-    reboot()
+ elseif state==4 then
+ 	if btnp(4) or btnp(5) then
+	  _init()
+    reload()
   end
- end
+	end
 end
 
 --this draws the base map, player, and the generated wall tiles
 function _draw()
- 
  palt(3, true)
 	palt(0, false)
 	
@@ -249,15 +266,15 @@ function _draw()
 
  elseif state==3 then
    cls()
-   camera(0,0)
-   map(70,70,0,0,16,16)
-   print("you won.\npress z to play again",40,60,7)
+   draw_outro()
 
  elseif state==4 then
    cls()
    camera(0,0)
    map(70,70,0,0,16,16)
    print("game over.\npress z to restart",40,60,7)
+ elseif state==99 then
+	print("thank you for playing!", h_center("thank you for playing!"), 60)
  end
  
  draw_diag()
@@ -319,10 +336,51 @@ function draw_intro()
      end
 end
 
+function draw_outro()
+	local text
+    if step == 0 then
+		    cls()
+		    text = "with mr. nightmare vanquished"
+		    print(text, h_center(text), 52)
+		    advanceui()
+    elseif step == 1 then
+		    cls()
+		    text = "and all his fears conquered"
+		    print(text, h_center(text), 52)
+		    advanceui()
+		    sspr(112, 40, 16, 16, 36, 72, 32, 32)
+    elseif step == 2 then
+		    cls()
+		    text = "bailey feels far more confident"
+		    print(text, h_center(text), 52)
+		    advanceui()
+    elseif step == 3 then
+		    cls()
+		    text = "and will wake up in the morning"
+		    print(text, h_center(text), 52)
+		    text = "feeling excited and happy."
+      print(text, h_center(text), 58)
+      sspr(0, 48, 8, 8, 48, 72, 24, 24)
+      advanceui()
+    elseif step == 4 then
+		    cls()
+		    text = "but what about"
+		    print(text, h_center(text), 52, 1)
+			text = "his next challenge?"
+			print(text, h_center(text), 60, 1)
+		    advanceui()
+ 	  elseif step == 5 then
+		    cls()
+   			advanceui()
+   			print("i can't wait to meet you...", h_center("i can't wait to meet you..."), 112, 8)
+      		sspr(48, 48, 8, 8, 48, 72, 24, 24)
+     end
+end
+
 function advanceui()
   if display then
-		  print("z➡️", 112, 120, 7)
-		  print("⬅️x", 0, 120, 7)
+		  print("x➡️", 112, 120, 7)
+		  print("⬅️z", 0, 120, 7)
 		end
 		counter += 1
 		if counter > 25 then
@@ -436,11 +494,13 @@ function ranintochest(obj, aim)
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
+				sfx(3)
 				mset(x2, y1, 18)
 				chestitem()
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
+				sfx(3)
 				mset(x2, y2, 18)
 				chestitem()
 			end 
@@ -486,6 +546,7 @@ function melee_attack(obj,aim)
 	or (x1<enx2 and x2>enx2 and y1<eny1 and y2>eny1)
 	or (x1<enx2 and x2>enx2 and y1<eny2 and y2>eny2) then
 		plr.health -= 1
+		sfx(5)
 		return true
 	end
 	
@@ -537,14 +598,12 @@ function	boss_in_range()
 	eny3=cboss.y+8
 			
 			if (x1<=enx1 and x2>=enx1 and y1<=eny1 and y2>=eny1)
+			or (x1>=enx1 and x2<=enx2 and y1<=eny1 and y2>=eny1)
 			or (x1<=enx1 and x2>=enx1 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx1 and x2>=enx1 and y1<=eny3 and y2>=eny3)
+			or (x1>=enx1 and x2<=enx2 and y1>=eny1 and y2<=eny2) 
 			or (x1<=enx2 and x2>=enx2 and y1<=eny1 and y2>=eny1)
-			or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx2 and x2>=enx2 and y1<=eny3 and y2>=eny3) 
-			or (x1<=enx3 and x2>=enx3 and y1<=eny1 and y2>=eny1)
-			or (x1<=enx3 and x2>=enx3 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx3 and x2>=enx3 and y1<=eny3 and y2>=eny3) then
+			or (x1>=enx1 and x2<=enx2 and y1<=eny2 and y2>=eny2)
+			or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2) then
 	 		return true
 			end
 end
@@ -645,6 +704,8 @@ end
 
 function plr_update()
 	if(plr.health <= 0) then
+		stop_muzak()
+		start_muzak(4)	
 		state = 4
 	end
 	
@@ -718,7 +779,7 @@ function plr_update()
 
 			end
 	elseif spawned == t and btn(5) then
-		if enemy_in_range(item1) and not item1.b then
+		if enemy_in_range(item1) then
 			shopping = t
 			map_tile = mget(item1.x,item1.y)
 		end
@@ -733,23 +794,35 @@ function attack_enemy()
 			
 			if plr.move == "right" then
 				i.x += 6
-				while i.x > 120 or collide_map(i,"right",0) do
+				while collide_map(i,"right",0) do
 					i.x -= 1
+				end
+				if i.x > 120 then
+					i.x = 112
 				end
 			elseif plr.move == "left" then
 				i.x -= 6
-				while i.x < 0 or collide_map(i,"left",0) do
+				while collide_map(i,"left",0) do
 					i.x -= 1
+				end
+				if i.x < 8 then
+					i.x = 8
 				end
 			elseif plr.move == "up" then
 				i.y -= 6
-				while i.y < 0 or collide_map(i,"up",0) do
+				while collide_map(i,"up",0) do
 					i.y -= 1
+				end
+				if i.y < 8 then
+					i.y = 8
 				end
 			elseif plr.move == "down" then
 				i.y += 6
-				while i.y > 128 or collide_map(i,"down",0) do
+				while collide_map(i,"down",0) do
 					i.y -= 1
+				end
+				if i.y > 128 then
+					i.y = 120
 				end
 			end
 		end
@@ -1138,6 +1211,22 @@ function enret_update(i)
 	end
 end
 
+function enret_update(i)
+	if i.move == "left" then
+		i.enret.x = i.x-i.enret.w
+		i.enret.y = i.y
+	elseif i.move == "right" then
+		i.enret.x = i.x+i.w
+		i.enret.y = i.y
+	elseif i.move == "up" then
+		i.enret.x = i.x
+		i.enret.y = i.y-i.enret.h
+	elseif i.move == "down" then
+		i.enret.x = i.x
+		i.enret.y = i.y+i.h
+	end
+end
+
 function detect(enem)
 	if enem.name == "slime" then
 		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
@@ -1178,7 +1267,7 @@ end
 
 function enemy_attack(enem)
 		attacked = false
-		if time() - enem.last > 8 then 
+		if time() - enem.last > 5 then 
 		if enem.name == "slime"
 		or enem.name == "skull"
 		or enem.name == "ghost"
@@ -1191,7 +1280,7 @@ function enemy_attack(enem)
 		elseif enem.name == "fire"
 		or enem.name == "eye" then
 			if can_shoot(enem) then
-				enem.last = time()+6
+				enem.last = time()-3
 				attacked = true
 			end
 		end
@@ -1208,8 +1297,8 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(106,enem.x, plr.y, direction, 3)
 			return true
-		elseif enem.name == "fire" then
-			shoot(84,enem.x, plr.y, direction, 2)
+		elseif enem.name == "fire" or enem.name == "mr.nightmare" then
+			shoot(84,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clock" then
 			shoot(125,enem.x, plr.y, direction, 3)
@@ -1223,11 +1312,11 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(107,plr.x, enem.y, direction, 3)
 			return true
-		elseif enem.name == "fire" then
-			shoot(123,plr.x, enem.y, direction, 2)
+		elseif enem.name == "fire" or enem.name == "mr.nightmare" then
+			shoot(123,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clok" then
-			shoot(124,plr.x, enem.y, direction, 3)
+			shoot(124,enem.x, enem.y, direction, 3)
 			return true
 		end
 	end
@@ -1253,6 +1342,7 @@ function proj_update()
 		if collide_map(i,"right",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1261,6 +1351,7 @@ function proj_update()
 		if collide_map(i,"left",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1269,6 +1360,7 @@ function proj_update()
 		if collide_map(i,"up",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1277,6 +1369,7 @@ function proj_update()
 		if collide_map(i,"down",0) then
 			del(projectiles,i)
 		elseif proj_hit(i) then
+			sfx(5)
 			plr.health -= 1
 			del(projectiles,i)
 		end
@@ -1519,7 +1612,7 @@ function spawnshop()
 	
 	item1.x = 60
 	item1.y = 64
-	item1.tile = mget(item1.x,item1.y)
+	item1.tile = mget(item1.x/8,item1.y/8)
 	item1.w = 8
 	item1.h = 8
 	
@@ -1585,7 +1678,6 @@ function buyitem(it)
 			plr.coins-= 5
 			itemcheck(thissp)
 		end
-
 	else 
 		diag = "you don't have enough money!"
 		dis_diag = t
@@ -1658,7 +1750,6 @@ end
 -->8
 -- boss code 
 
-
 -- function to create boss 
 newboss = function (name,hp)
 
@@ -1726,8 +1817,10 @@ end
 
 
 --function to spawn a boss 
-function spawn_mboss()  
-	
+function spawn_mboss() 
+
+	stop_muzak()
+	start_muzak(2)
 	--pick a boss we have not spawned 
 	cboss = mbosses[flr(rnd(3)+1)] 
 	while not cboss.spawned do 
@@ -2124,9 +2217,9 @@ __sfx__
 0116001e0e0520f052055520f0520f052065520d0520d052065520c0520c052065520905209052045520905209052035520805208052025520905209052025520d0520d052045520d0520d052055520d00200000
 011000001e05520055220550010019f0014f000ef000bf000af0009f0007f0007f0007f000ad0007f0008d0007d0007d0009c0007d0007d00000001ec001ac000000016c0012c0011c0010c00000000000000000
 011000002e710317101a0020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-011000000625306253062530000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000000625000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 01100000376511425214252256510f2520f252136510325203252326000b2000b2000d2000f200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0110000025953299530d8001080009800000003880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0010000025913299130d8001080009800000003880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010a000023f5226f5229f520000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000
 001200003f372000000b7003f372097000b7003f372000003f3723f3003f3723c3003f3723b3523f3523a3523f352363522b3521632203322023120000000000000000000000c00000000000000c000000021300
 0010000000a1000a700167005a7001a400062001a2002670026700167001660006500064001630016300063000630016300003000030016200001000010006100061000610000000000000000000000000000000
@@ -2145,7 +2238,7 @@ __sfx__
 __music__
 00 12135444
 03 11155644
-00 024f5044
+03 024f5044
 00 41424344
 00 41424344
 00 41424344
