@@ -1648,14 +1648,7 @@ function spawnshop()
 	item1.w = 8
 	item1.h = 8
 	
-	item2.x = 64
-	item2.y = 64
-	item2.tile = mget(item2.x/8,item2.y/8)
-	item2.w = 8
-	item2.h = 8
-	
 	item1.b = f 
-	item2.b = f
 	
 	mset(7.5,8,item1.sp)
 	
@@ -1676,9 +1669,6 @@ function drawshop()
 			spr(item1.sp,56,64)
 		end 
 		
-		if not item2.b then 
-			spr(item2.sp,64,64)
-		end 
 		--print(map_tile, 64,120,10)
 	end 
 end  
@@ -1718,13 +1708,6 @@ function buyitem(it)
 			plr.coins-= 5
 			itemcheck(thissp)
 			mset(item1.x/8,item1.y/8,0)
-		end 
-		if it == item2.tile then 
-			item2.b = t
-			thissp = item2.sp 
-      plr.coins -= 5
-      itemcheck(thissp)
-			mset(item2.x/8,item2.y/8,0)
 		end 
 	else 
 		diag = "you don't have enough money!"
