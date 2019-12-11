@@ -13,8 +13,6 @@ function _init()
 	item1={}
 	item2={}
 	
-	palt(3, true)
-	palt(0, false)
 	state = 0
 	step = 0
 
@@ -212,7 +210,9 @@ end
 --this draws the base map, player, and the generated wall tiles
 function _draw()
  
- 
+ palt(3, true)
+	palt(0, false)
+	
  if state==0 then
 		draw_intro()
  elseif state==1 then
@@ -336,11 +336,11 @@ function draw_main()
    map(0, 0, 0, 0, 16, 16)
    an_plr()
    spr(reticle.sp, reticle.x, reticle.y) 
-
+   
    for i in all(tiles) do
   	  mset(i.x, i.y, i.s)
    end
-  
+   
    for j in all(enemy) do
   		an_enemy(j)
    end
@@ -427,34 +427,59 @@ function ranintochest(obj, aim)
 		if fget(mget(x1,y1),1) then
 			if btnp(5) then
 				mset(x1, y1, 18)
-				plr.coins += 10
-				plr.keys -= 1 
-				diag = "found 10 coins!"
-				dis_diag = t
+				if flr(rnd(10)) == 1 then 
+					diag = "found a potion.\ni feel a bit better!"
+					dis_diag = t
+					plr.health = plr.maxhp
+				else
+					plr.coins += 10
+					plr.keys -= 1
+					diag = "found 10 coins!"
+					dis_diag = t
+				end
 			end
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
 				mset(x1, y2, 18)
-				plr.coins += 10
-				plr.keys -= 1
-				diag = "found 10 coins!"
-				dis_diag = t
+				
+				if flr(rnd(10)) == 1 then 
+					diag = "found a potion.\ni feel a bit better!"
+					dis_diag = t
+					plr.health = plr.maxhp
+				else
+					plr.coins += 10
+					plr.keys -= 1
+					diag = "found 10 coins!"
+					dis_diag = t
+				end 
 			end
 		elseif fget(mget(x2,y1),1) then
 			if btnp(5) then
 				mset(x2, y1, 18)
-				plr.coins += 10
-				plr.keys -= 1
-				diag = "found 10 coins!"
-				dis_diag = t
+				if flr(rnd(10)) == 1 then 
+					diag = "found a potion.\ni feel a bit better!"
+					dis_diag = t
+					plr.health = plr.maxhp
+				else
+					plr.coins += 10
+					plr.keys -= 1
+					diag = "found 10 coins!"
+					dis_diag = t
+				end 
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
 				mset(x2, y2, 18)
-				plr.coins += 10
-				plr.keys -= 1
-				diag = "found 10 coins!"
-	  	dis_diag = t
+				if flr(rnd(10)) == 1 then 
+					diag = "found a potion.\ni feel a bit better!"
+					dis_diag = t
+					plr.health = plr.maxhp
+				else
+					plr.coins += 10
+					plr.keys -= 1
+					diag = "found 10 coins!"
+					dis_diag = t
+				end 
 			end
 		end 	
 	end
@@ -567,21 +592,22 @@ function genlevel()
 	end
   for i=3, 12 do
     for j= 3, 12 do
-      if flr(rnd(15)) == 0 and i!=1 and j!= 1 then
-        temp = {}
-        temp.x = i
-        temp.y = j
-        temp.s = 12
-        add(tiles,temp)
-      elseif flr(rnd(150)) == 1 and i!=j and j!=1 then
-        temp = {}
-        temp.x = i
-        temp.y = j
-        temp.s = 17
-        add(tiles, temp)
-      end
+    	temp = {}
+     temp.x = i
+     temp.y = j
+     if flr(rnd(15)) == 0 and i!=1 and j!= 1 then
+      temp.s = 12
+      add(tiles,temp)
+     elseif flr(rnd(150)) == 1 and i!=j and j!=1 then
+      temp.s = 17
+      add(tiles, temp)
+     elseif flr(rnd(125)) == 1 and i!=j and j !=1 then 
+      temp.s = 25
+      add(tiles,temp)
+     end
     end
   end
+	
 end
 
 function updatemap()
@@ -1970,14 +1996,14 @@ __gfx__
 0070070001000010700000000000000033333333333333330000000000000000000000000000000015000051dd111d5015d6615505615ddddd111d50661156dd
 0000000000011000700000000000000033333333333333330000000000000000000000000000000051000015dd551650dddddddd05d155dddd55175051615ddd
 0000000000000000700000000000000033333333333333330000000000000000000000000000000010000001dd651110dddddddd055111dddd751110155155dd
-3344433311111111111111113333333333333333333333333333333333333333333333333333333300000000dddddddddddddddddddddddddddddddddddddddd
-3302033314244241144aa4413388388333883883333aaa333393333333a333a333a333333333323300000000d550055dd500005ddddddddddddddddddddddddd
-330303332444444214000041383383383888888833aa99a333a3393333a33333333333333388333300000000505005055000000565166d5165101010dd1666d5
-303730339aaaaaa940000004383333383888888833a9a9a333993a33aa3aa33333333a333888882300000000505aa505500000055515555155101010dd515555
-087882032449944224499442338333833388888333a9aaa333aa393333a333333333a3a3328822330000000050599505500000051111111111111111ddd51111
-0888220324422442244224423338383333388833333aaa33399a999333a33a3333333a333322333300000000505005055000000516d516d516d516d5dd651165
-30822033022222200222222033338333333383333333333399a99aa9333333333a333333333223230000000050111105501111051555155515551555dd651615
-33000333300000033000000333333333333333333333333333999993a33333333333333a333333330000000001111111011111110000000000000000dd651651
+3344433311111111111111113333333333333333333333333333333333333333333333335111115500000000dddddddddddddddddddddddddddddddddddddddd
+3302033314244241144aa4413388388333883883333aaa333393333333a333a333a333331115121500000000d550055dd500005ddddddddddddddddddddddddd
+330303332444444214000041383383383888888833aa99a333a3393333a33333333333331188111100000000505005055000000565166d5165101010dd1666d5
+303730339aaaaaa940000004383333383888888833a9a9a333993a33aa3aa33333333a331888882100000000505aa505500000055515555155101010dd515555
+087882032449944224499442338333833388888333a9aaa333aa393333a333333333a3a3128822110000000050599505500000051111111111111111ddd51111
+0888220324422442244224423338383333388833333aaa33399a999333a33a3333333a331122111500000000505005055000000516d516d516d516d5dd651165
+30822033022222200222222033338333333383333333333399a99aa9333333333a333333511221210000000050111105501111051555155515551555dd651615
+33000333300000033000000333333333333333333333333333999993a33333333333333a551111110000000001111111011111110000000000000000dd651651
 333339333339333333393333333933333399933333330443aaa33aaa0000000000000000000000001111100000000000011111111111111111111111dd551551
 33a3933333333393339a9333333a93333393933333307303a333333a0000000000000000000000001100000000000000000001111115111115111111ddd51615
 33393933333393333339a933339aa333339993333307d033a333333a0000000000000000000000001000000000000000000000111551551511111111dd651166
