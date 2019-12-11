@@ -91,6 +91,7 @@ end
 function stop_muzak()
 	music(-1) playing=false
 end
+
 -->8
 --update and draw--
 
@@ -275,13 +276,15 @@ function _draw()
  elseif state==3 then
    cls()
    draw_outro()
+   stop_muzak()
 
  elseif state==4 then
    cls()
    camera(0,0)
    map(70,70,0,0,16,16)
    print("game over.\npress z to restart",40,60,7)
- elseif steate==99 then
+   stop_muzak()
+ elseif state==99 then
 	print("thank you for playing!", h_center("thank you for playing!"), 60)
  end
  
@@ -707,8 +710,6 @@ end
 
 function plr_update()
 	if(plr.health <= 0) then
-		stop_muzak()
-		start_muzak(4)	
 		state = 4
 	end
 	
@@ -1243,22 +1244,6 @@ function enret_update(i)
 	end
 end
 
-function enret_update(i)
-	if i.move == "left" then
-		i.enret.x = i.x-i.enret.w
-		i.enret.y = i.y
-	elseif i.move == "right" then
-		i.enret.x = i.x+i.w
-		i.enret.y = i.y
-	elseif i.move == "up" then
-		i.enret.x = i.x
-		i.enret.y = i.y-i.enret.h
-	elseif i.move == "down" then
-		i.enret.x = i.x
-		i.enret.y = i.y+i.h
-	end
-end
-
 function detect(enem)
 	if enem.name == "slime" then
 		if plr.x - enem.x < 48 and plr.y - enem.y < 48 then
@@ -1327,13 +1312,13 @@ function can_shoot(enem)
 			direction = "right"
 		end
 		if enem.name == "eye" then
-			shoot(106,enem.x, plr.y, direction, 3)
+			shoot(106,enem.x, enem.y, direction, 3)
 			return true
 		elseif enem.name == "fire" then
 			shoot(84,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clock" then
-			shoot(125,enem.x, plr.y, direction, 3)
+			shoot(125,enem.x, enem.y, direction, 3)
 			return true
 		end
 	elseif plr.x >= enem.x and plr.x <= enem.y+enem.w then
@@ -1342,7 +1327,7 @@ function can_shoot(enem)
 			direction = "down"
 		end
 		if enem.name == "eye" then
-			shoot(107,plr.x, enem.y, direction, 3)
+			shoot(107,enem.x, enem.y, direction, 3)
 			return true
 		elseif enem.name == "fire" then
 			shoot(123,enem.x, enem.y, direction, 2)
@@ -1861,8 +1846,8 @@ function spawn_mboss()
 end
 
 function spawn_nmreboss() 
-	--pick a boss we have not spawned 
 	cboss = mbosses[5]  
+  sfx(6)
 end
 
 --draw the bosses 
