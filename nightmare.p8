@@ -45,11 +45,12 @@ function _init()
 	
 	--shop init 
 	buy = {16,36,51}
+	shp = {}
 	spawned = f
 	select = 1
 
 	level = 4
-	difficulty = 0
+	difficulty = 3
 	tiles = {}
 	enemy = {}
 	mbosses = {}
@@ -94,7 +95,6 @@ end
 
 --this just handles moves right now
 function _update()
-
  if state == 0 then
    if btnp(4) then
      step += 1
@@ -128,22 +128,24 @@ function _update()
 					mset(7, 1, 45)
 					mset(8, 1, 45)
 					mset(9, 1, 61)
+					walls = f
 				elseif rand == 1 then
 					mset(15, 7, 61)
 					mset(15, 8, 45)
 					mset(15, 9, 45)
+					walls = f
 				elseif rand == 2 then
 					mset(6, 15, 61)
 					mset(7, 15, 45)
 					mset(8, 15, 45)
 					mset(9, 15, 61)
+					walls = f
 				elseif rand == 3 then
 					mset(0, 7, 61)
 					mset(0, 8, 45)
 					mset(0, 9, 45)
+					walls = f
 				end
-				
-				walls = f 
 			end
 		end
    if level == 5 then 
@@ -152,12 +154,11 @@ function _update()
 			
 
  elseif state == 2 then
-	 if shopping then 
-				use_menu()
-		else 
-			plr_update()
-		end
-	
+ if shopping and spawned then 
+			use_menu()
+	else 
+		plr_update()
+	end
 	if cboss.hp > 0 then
  	boss_update()
  	mset(23,1,202)
@@ -178,6 +179,7 @@ function _update()
  	if difficulty == 4 then
  		stop_muzak()
  	 start_muzak(3)
+ 	 step = 0
 			state = 3
 		end
  	mset(23,1,227)
@@ -234,18 +236,16 @@ end
 
 --this draws the base map, player, and the generated wall tiles
 function _draw()
- 
  palt(3, true)
 	palt(0, false)
 	
  if state==0 then
-		draw_intro()
+	draw_intro()
  elseif state==1 then
- 	
-		draw_main()
-		draw_ui()
- 	draw_enemy_health()
- 	
+ draw_diag()
+	draw_main()
+	draw_ui()
+ draw_enemy_health()
  elseif state==2 then
    cls()
    map(17, 0, 0, 0, 16, 16)
@@ -256,10 +256,8 @@ function _draw()
  			draw_box()
  			draw_menu()
  		end
- 		
- 	 an_plr()
-   spr(reticle.sp, reticle.x, reticle.y) 
-   
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
+   spr(reticle.sp, reticle.x, reticle.y)
    if cboss.hp > 0 then
    	draw_boss()
    	if cboss.name == "grim reaper" then
@@ -271,6 +269,7 @@ function _draw()
    	end
    end
    draw_ui()
+   draw_diag()
 
  elseif state==3 then
    cls()
@@ -281,11 +280,9 @@ function _draw()
    camera(0,0)
    map(70,70,0,0,16,16)
    print("game over.\npress z to restart",40,60,7)
- elseif steate==99 then
+ elseif state==99 then
 	print("thank you for playing!", h_center("thank you for playing!"), 60)
  end
- 
- draw_diag()
 end
 
 function h_center(s)
@@ -400,7 +397,7 @@ end
 function draw_main()
    cls()
    map(0, 0, 0, 0, 16, 16)
-   an_plr()
+   spr(plr.sp, plr.x, plr.y,1,1,plr.flp)
    spr(reticle.sp, reticle.x, reticle.y) 
    
    for i in all(tiles) do
@@ -493,7 +490,6 @@ function ranintochest(obj, aim)
 		if fget(mget(x1,y1),1) then
 			if btnp(5) then
 				mset(x1, y1, 18)
-<<<<<<< HEAD
 				if flr(rnd(10)) == 1 then 
 					diag = "found a potion.\ni feel a bit better!"
 					dis_diag = t
@@ -504,16 +500,11 @@ function ranintochest(obj, aim)
 					diag = "found 10 coins!"
 					dis_diag = t
 				end
-=======
-				plr.coins += 10
-				plr.keys -= 1
->>>>>>> a767ddde25d5adfa47822fe0f3835dbfa529652b
 			end
 		elseif fget(mget(x1,y2),1) then
 			if btnp(5) then
 				sfx(3)
-				mset(x1, y2, 18)
-				
+				mset(x1, y2, 18)			
 				if flr(rnd(10)) == 1 then 
 					diag = "found a potion.\ni feel a bit better!"
 					dis_diag = t
@@ -539,6 +530,8 @@ function ranintochest(obj, aim)
 					diag = "found 10 coins!"
 					dis_diag = t
 				end 
+				plr.coins += 10
+				plr.keys -= 1
 			end
 		elseif fget(mget(x2,y2),1) then
 			if btnp(5) then
@@ -555,7 +548,7 @@ function ranintochest(obj, aim)
 					dis_diag = t
 				end 
 			end
-		end 	
+		end	
 	end
 end
 
@@ -632,14 +625,12 @@ function	boss_in_range()
 	eny3=cboss.y+8
 			
 			if (x1<=enx1 and x2>=enx1 and y1<=eny1 and y2>=eny1)
+			or (x1>=enx1 and x2<=enx2 and y1<=eny1 and y2>=eny1)
 			or (x1<=enx1 and x2>=enx1 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx1 and x2>=enx1 and y1<=eny3 and y2>=eny3)
+			or (x1>=enx1 and x2<=enx2 and y1>=eny1 and y2<=eny2) 
 			or (x1<=enx2 and x2>=enx2 and y1<=eny1 and y2>=eny1)
-			or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx2 and x2>=enx2 and y1<=eny3 and y2>=eny3) 
-			or (x1<=enx3 and x2>=enx3 and y1<=eny1 and y2>=eny1)
-			or (x1<=enx3 and x2>=enx3 and y1<=eny2 and y2>=eny2)
-			or (x1<=enx3 and x2>=enx3 and y1<=eny3 and y2>=eny3) then
+			or (x1>=enx1 and x2<=enx2 and y1<=eny2 and y2>=eny2)
+			or (x1<=enx2 and x2>=enx2 and y1<=eny2 and y2>=eny2) then
 	 		return true
 			end
 end
@@ -744,10 +735,8 @@ function plr_update()
 		start_muzak(4)	
 		state = 4
 	end
-	
 	plr.moving = false
 	plr.lastmove = plr.move
-	plr.atk = f
 	
 	grid_x = flr(reticle.x/8)
 	grid_y = flr(reticle.y/8)
@@ -756,7 +745,6 @@ function plr_update()
 	
 	ranintochest(plr, plr.lastmove)
 	attack_enemy()
-	
 	if level == 5 or difficulty >= 4 then
 		attack_boss()
 	end
@@ -766,6 +754,10 @@ function plr_update()
 		plr.move = "left"
 		plr.moving=true
 		reticle_aim("left")
+		
+		--animate 
+		plr.flp = true
+		plr_walk()
 		
 		if collide_map(plr,"left",0) then
 			plr.x +=1
@@ -779,6 +771,9 @@ function plr_update()
 		plr.move = "right"
 		plr.moving=true
 		reticle_aim("right")
+		--animate
+		plr.flp = false
+		plr_walk()
 		
 		if collide_map(plr,"right",0) then
 			plr.x -= 1
@@ -792,6 +787,8 @@ function plr_update()
 		plr.move = "up"
 		plr.moving=true
 		reticle_aim("up")
+		if plr.sp == 96 or plr.sp ==97 then plr.sp = 99 end 
+		plr_up()
 		
 		if collide_map(plr,"up",0) then
 			plr.y += 1
@@ -805,6 +802,10 @@ function plr_update()
 		plr.move = "down"
 		plr.moving=true
 		reticle_aim("down")
+
+		--animate 
+		plr.flp = false
+		plr_walk()
 		
 		if collide_map(plr,"down",0) then
 			plr.y -= 1
@@ -829,8 +830,6 @@ function attack_enemy()
 	for i in all(enemy) do
 		if enemy_in_range(i) and btnp(5) then
 			i.health -= 1
-			plr.atk = t 
-			
 			if plr.move == "right" then
 				i.x += 6
 				while collide_map(i,"right",0) do
@@ -894,13 +893,13 @@ end
 --enemy functions--
 function genenemies()
 		if difficulty == 0 then
-  	sn = 3
+  	sn = 2
   elseif difficulty == 1 then
-   sn = 4
+   sn = 3
   elseif difficulty == 2 then
-   sn = 5
+   sn = 4
   elseif difficulty == 3 then
-   sn = 7
+   sn = 5
   end
 		for i=3, 12 do
     for j= 3, 12 do
@@ -1104,19 +1103,6 @@ function enemy_update()
 						i.xgoal = i.x
 						i.ygoal = i.y
 					end
-					if i.xgoal > i.x then
-						h=enemy_move(i,"right")
-					elseif i.xgoal < i.x then
-						h=enemy_move(i,"left") 
-					elseif i.ygoal > i.y then
-						h=enemy_move(i,"down")
-					elseif i.ygoal < i.y then
-						h=enemy_move(i,"up")
-					end
-					if not h then
-						i.xgoal = i.x
-						i.ygoal = i.y
-					end
 				end
 			end
 		else
@@ -1160,19 +1146,6 @@ function enemy_update()
 				elseif i.name == "fire" then
 					if time() - i.lastjump > 3 and i.x==i.xgoal and i.y==i.ygoal then 
 						jump(i)
-					end
-					if i.xgoal > i.x then
-						h=enemy_move(i,"right")
-					elseif i.xgoal < i.x then
-						h=enemy_move(i,"left") 
-					elseif i.ygoal > i.y then
-						h=enemy_move(i,"down")
-					elseif i.ygoal < i.y then
-						h=enemy_move(i,"up")
-					end
-					if not h then
-						i.xgoal = i.x
-						i.ygoal = i.y
 					end
 					if i.xgoal > i.x then
 						h=enemy_move(i,"right")
@@ -1362,7 +1335,7 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(106,enem.x, plr.y, direction, 3)
 			return true
-		elseif enem.name == "fire" then
+		elseif enem.name == "fire" or enem.name == "mr.nightmare" then
 			shoot(84,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clock" then
@@ -1377,7 +1350,7 @@ function can_shoot(enem)
 		if enem.name == "eye" then
 			shoot(107,plr.x, enem.y, direction, 3)
 			return true
-		elseif enem.name == "fire" then
+		elseif enem.name == "fire" or enem.name == "mr.nightmare" then
 			shoot(123,enem.x, enem.y, direction, 2)
 			return true
 		elseif enem.name == "tik tok clok" then
@@ -1489,6 +1462,27 @@ end
 
 --player--
 --walk left, right, down 
+d = 5 
+function plr_walk() 
+	d=d-1 
+	if d < 0  then 
+		plr.sp=plr.sp+1 
+		if plr.sp != 97 then plr.sp=96 end 
+		d=5
+	end
+end 
+
+-- animation up 
+d2=5 
+function plr_up()
+	d2=d2-1 
+	if d2 < 0 then 
+	plr.sp=plr.sp+1
+	if plr.sp > 100 then plr.sp=99 end
+	d2=5
+	end 
+end 
+
 function an_plr()
 	
 	pflp = f
@@ -1496,37 +1490,30 @@ function an_plr()
 		psf = 99
 		pnf = 2 
 		psp = 5
-		patk = 101
-	else
-	 psf = 96
-	 pnf = 2
-	 psp = 5 
-	 patk = 98
-	 if plr.move == "left" then 
-	 	pflp = t 
-	 end 
+ else
+ 	psf = 96
+ 	pnf = 2
+ 	psp = 5 
+ 	
+ 	if plr.move == "left" then 
+ 		pflip = t 
+ 	end 
 	end
-		
-	if plr.moving then 
-		anim(plr,psf,pnf,psp,pflp)
-	elseif not plr.moving then  
-		spr(psf,plr.x,plr.y,1,1,pflp)
-	end  
 	
-	if plr.atk then
-		spr(patk,plr.x,plr.y,1,1,pflp)
-	end 
-end  
+	anim(plr,psf,pnf,psp,pflp)
+	 
+end 
 
 -- enenmies
 function an_enemy(i)
 	--check which way to flip
 	eflp = f
-	func = f 
 	
 	if plr.x > i.x then 
 		eflp = t
 	end 
+	
+	func = f 
 	
 	if i.name == "slime" then
 		func = t 
@@ -1535,14 +1522,14 @@ function an_enemy(i)
 		sp = 8
 		  
 	elseif i.name == "shadow" then 
-		if not i.moving then 
+		if i.moving == false then 
 			i.s = 73
 		else 
 			i.s = 72
 		end
 		
 	elseif i.name == "eye" then 
-		if not i.moving then 
+		if i.moving == f then 
 			i.s = 74 
 		elseif i.moving == true then 
 			if plr.y < i.y then
@@ -1560,7 +1547,7 @@ function an_enemy(i)
 		end 
 	
 	elseif i.name == "ghost" then
-		if not i.moving then 
+		if i.moving == f then 
 			i.s = 71
 		else 
 			func = t 
@@ -1570,7 +1557,7 @@ function an_enemy(i)
 		end
 		
 	elseif i.name == "blood" then
-		if not i.moving then 
+		if i.moving == f then 
 			i.s = 77
 		elseif plr.y < i.y then 
 			i.s = 79
@@ -1593,7 +1580,7 @@ function an_enemy(i)
 	end
 	
 	-- if we use the function
-	if func then 
+	if func == t then 
 		anim(i,sf,nf,sp,eflp)
 	else 
 		spr(i.s,i.x,i.y,1,1,eflp)
@@ -1614,15 +1601,7 @@ function anim(o,sf,nf,sp,fl)
   end
 
   o.a_fr=sf+o.a_st
-  
-  if o == cboss then
-  	if cboss.name == "rotting fish" and o.a_fr == 161 then 
-  		o.a_fr = 162
-  	end  
-  	spr(o.a_fr,o.x,o.y,2,2,fl)
-  else 
-  	spr(o.a_fr,o.x,o.y,1,1,fl)
-  end 
+  spr(o.a_fr,o.x,o.y,1,1,fl)
 end
 	
 -- dialogeeee
@@ -1636,7 +1615,7 @@ function draw_box()
 	
 	--corner
 	spr(2,0,104)
-	spr(2,120,104,1,1,t)
+	spr(2,120,104,1,1,t,f)
 	
 	--side, left
 	spr(7,0,112,1,1)
@@ -1649,11 +1628,11 @@ end
 
 function draw_diag()
 	
-	if dis_diag then 
+	if dis_diag == t then 
 		draw_box() 
 		print(sub(diag,1,flr(d_tick+6/3)),8,107)
 		d_tick+=1
-		if d_tick > 90 then
+		if d_tick > 90 and input == f then
 			dis_diag = false
 			diag = ""
 			d_tick = 0
@@ -1667,15 +1646,16 @@ function spawnshop()
 	
 	spawned = t
 	
-	diag = "do you want to buy something?"
 	dis_diag = t
-		
-	plr.x = 64 
-	plr.y = 80 
+	input = f
+	diag = "do you want to buy something?"
+
+	draw_diag()
 
 	item1.sp = buy[flr(rnd(3)) + 1]
+	item2.sp = buy[flr(rnd(3)) + 1] 
 	
-	item1.x = 60
+	item1.x = 56
 	item1.y = 64
 	item1.tile = mget(item1.x/8,item1.y/8)
 	item1.w = 8
@@ -1688,9 +1668,11 @@ function spawnshop()
 	item2.h = 8
 	
 	item1.b = f 
-	item2.b = f
+	item2.b = f 
 	
-	mset(7.5,8,item1.sp)
+	
+	mset(7,8,item1.sp)
+	mset(8,8,item2.sp)
 	
 	
 end
@@ -1712,17 +1694,19 @@ function drawshop()
 		if not item2.b then 
 			spr(item2.sp,64,64)
 		end 
+		
 		--print(map_tile, 64,120,10)
 	end 
 end  
 
 --info shows the items info
 function i_info(it)
-
 	if it == item1.tile then 
 			thissp = item1.sp
-	end
-	 
+		end 
+		if it == item2.tile then 
+			thissp = item2.sp
+		end 
 	diag = "this is a"
 	
 	if thissp == 51 or thissp == 50 then 
@@ -1740,7 +1724,8 @@ end
 --wip
 --this buys the item and applies effect
 function buyitem(it)
-	if plr.coins >= 5 then 
+	
+	if plr.coins > 5 then 
 	
 		diag = "thanks for shopping!"
 		dis_diag = t
@@ -1748,33 +1733,28 @@ function buyitem(it)
 		if it == item1.tile then 
 			item1.b = t 
 			thissp = item1.sp
-			plr.coins-= 5
-			itemcheck(thissp)
 			mset(item1.x/8,item1.y/8,0)
 		end 
 		if it == item2.tile then 
 			item2.b = t
 			thissp = item2.sp 
-      plr.coins -= 5
-      itemcheck(thissp)
 			mset(item2.x/8,item2.y/8,0)
 		end 
-	else 
-		diag = "you don't have enough money!"
-		dis_diag = t
-	end 
-	
-	--shopping = f 
-end 
-
-function itemcheck(thissp)
-	if thissp == 51 or thissp == 50 then 
+		
+		if thissp == 51 or thissp == 50 then 
 			plr.maxhp += 1
 		elseif thissp == 36 then
 			plr.keys += 1
 		elseif thissp == 16 then 
 			plr.health = plr.maxhp		
 		end
+		plr.coins-= 5
+	else 
+		diag = "you don't have enough money!"
+		dis_diag = t
+	end 
+	
+	shopping = f 
 end 
 
 --draws the would u like to buy
@@ -1820,8 +1800,7 @@ function selection_check()
 	if selected then
 		selected = false
 		if select == 1 then 
-		 buyitem(map_tile)
-		 shopping = f  
+		 buyitem(map_tile) 
 		else 
 			i_info(map_tile)  
 		end 
@@ -1880,6 +1859,7 @@ function make_mboss()
 		w=8,
 		h=8
 	}  
+
 	
 	nmre = newboss("mr.nightmare",7)
 	nmre.sprts = {132} 
@@ -1894,19 +1874,24 @@ function make_mboss()
 	nmre.w = 32
 	nmre.h = 32 
 	
-	mbosses = {clock, grim, fish,nmre} 
+	mbosses = {clock, grim, fish, bat, nmre} 
 end 
 
 
 --function to spawn a boss 
-function spawn_mboss()  
-  stop_muzak()
+function spawn_mboss() 
+
+	stop_muzak()
 	start_muzak(2)
+	
+	--current boss 
+	rndm = flr(rnd(3) + 1)
+	
 	--pick a boss we have not spawned 
-	cboss = mbosses[flr(rnd(3)+1)] 
-	while not cboss.spawned do 
+	cboss = mbosses[rndm] 
+	while cboss.spawn == false do 
 		 cboss = mbosses[flr(rnd(3)+1)]
-			cboss.spawned = true 
+			cboss.spawn = true 
 	end 
 end
 
@@ -1919,32 +1904,12 @@ end
 function draw_boss()
 
 	if cboss.name != "mr.nightmare" then
-		ani_boss()
+		spr(cboss.sp,cboss.x,cboss.y,2,2,flp)
 	else 
 		spr(cboss.sp,cboss.x,cboss.y,4,4,flp)
 		draweye()
 	end
 end 
-
-function ani_boss()
-
-	cflp = f 
-	if plr.x > cboss.x then 
-	 	pflp = t 
-	end
-	 
-	if cboss.name == "rotting fish" then
-		anim(cboss,160,2,5,cflp)
-	elseif cboss.name == "mr. nightmare" then
-			if cboss.last > 3 then
-				spr(128,cboss.x-24, cboss.y-8,2,2) 
-			elseif cboss.last < 3 then 
-				spr(130, cboss.x-24,cboss.y-8,2,2)
-			end 
-	end 
-	
-
-end
 
 function draw_scythe()
 	spr(scythe.sp,scythe.x,scythe.y,2,2, flp)
