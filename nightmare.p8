@@ -461,7 +461,8 @@ function chestitem()
 		dis_diag = t
 	end
 	
-	box = f 
+	plr.keys -= 1
+ 
 end 
 
 function melee_attack(obj,aim)
@@ -1557,9 +1558,9 @@ function i_info(it)
 	diag = "this is a"
 	
 	if thissp == 51 or thissp == 50 then 
-		diag = diag.." heart.\nit willraise your health by one."
+		diag = diag.." heart.\nit will raise your health\nby one."
 	elseif thissp == 36 then
-		diag = diag.." key.\nyou can use these to open chests."
+		diag = diag.." key.\nyou can use these to open \nchests."
 	elseif thissp == 16 then 
 		diag = diag.." potion.\nthis will restore your health."
 	end 
