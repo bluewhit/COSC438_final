@@ -1,5 +1,13 @@
 # COSC438_final
 by Zach Taylor, Hannah Roe, Ali Yar Khan, Whitney Trovinger
+Project Info below instructions
+
+## Play:
+- Use arrow keys to move
+- Use X to attack when walking at an enemy
+- Use X to open a chest and use a key
+- Enemies have an attack cooldown, once you've been hit, it's time to strike!
+
 
 ## Milestone Goals:
 ### November 1st: Procedurally generated map, collisions, and sprites completed. Some combat and movement started.
